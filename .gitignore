@@ -1,0 +1,9 @@
+node_modules/
+screenshots/
+*.log
+.env
+*.mp4
+*.rar
+.vscode/
+borrows.json
+users.json

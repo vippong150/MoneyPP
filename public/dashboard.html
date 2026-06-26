@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>นาย ชาเย็น - หน้าแรก</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #00d4ff;
+            --secondary: #a855f7;
+            --accent: #ff6b9d;
+            --dark: #0a0a1a;
+            --card-bg: rgba(255,255,255,0.05);
+            --glass: rgba(255,255,255,0.08);
+            --neon-glow: 0 0 20px rgba(0,212,255,0.3);
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--dark);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        #particles-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(255,107,157,0.05) 0%, transparent 50%);
+        }
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 240px;
+            height: 100vh;
+            z-index: 100;
+            background: rgba(10,10,26,0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-brand {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            margin-bottom: 10px;
+        }
+        .sidebar-brand h2 {
+            font-size: 1.3em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-brand small {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75em;
+        }
+        .sidebar-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 12px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            font-size: 0.95em;
+            font-family: inherit;
+        }
+        .menu-item:hover {
+            background: rgba(0,212,255,0.08);
+            color: #fff;
+        }
+        .menu-item.active {
+            background: rgba(0,212,255,0.12);
+            color: var(--primary);
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .menu-item .badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .sidebar-user {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        .user-info-sidebar {
+            flex: 1;
+            min-width: 0;
+        }
+        .user-info-sidebar .name {
+            font-size: 0.9em;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-info-sidebar .role {
+            font-size: 0.75em;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            position: relative;
+            z-index: 1;
+            padding: 30px 40px;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .topbar h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        .topbar h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .topbar-right .date-display {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85em;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0,212,255,0.3);
+            box-shadow: var(--neon-glow);
+        }
+        .stat-card .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            margin-bottom: 12px;
+        }
+        .stat-card .stat-icon.blue { background: rgba(0,212,255,0.15); color: var(--primary); }
+        .stat-card .stat-icon.purple { background: rgba(168,85,247,0.15); color: var(--secondary); }
+        .stat-card .stat-icon.pink { background: rgba(255,107,157,0.15); color: var(--accent); }
+        .stat-card .stat-icon.green { background: rgba(46,204,113,0.15); color: #2ecc71; }
+        .stat-card .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85em;
+        }
+
+        /* Section */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+        }
+        .section-header h2 {
+            font-size: 1.4em;
+            margin-bottom: 6px;
+        }
+        .section-header p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9em;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: rgba(0,212,255,0.2);
+        }
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title i {
+            color: var(--primary);
+        }
+
+        /* Borrow Form */
+        .borrow-form {
+            max-width: 400px;
+        }
+        .borrow-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0,212,255,0.15);
+        }
+        .form-group select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .form-group input[readonly] {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b7a, #ff4757);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,71,87,0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(0,212,255,0.3);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: var(--primary);
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85em;
+        }
+
+        /* History Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9em;
+        }
+        tr:hover td {
+            background: rgba(0,212,255,0.03);
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .status.pending { background: rgba(255,193,7,0.15); color: #ffc107; }
+        .status.approved { background: rgba(46,204,113,0.15); color: #2ecc71; }
+        .status.rejected { background: rgba(255,71,87,0.15); color: #ff4757; }
+        .status.completed { background: rgba(0,212,255,0.15); color: var(--primary); }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.9em;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+        }
+        .toast.success { background: rgba(46,204,113,0.9); }
+        .toast.error { background: rgba(255,71,87,0.9); }
+        .toast.info { background: rgba(0,212,255,0.9); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Update Log */
+        .update-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .update-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+        }
+        .update-item {
+            position: relative;
+            padding: 16px 0;
+        }
+        .update-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--dark);
+            box-shadow: 0 0 10px rgba(0,212,255,0.4);
+        }
+        .update-item .date {
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.4);
+        }
+        .update-item .title {
+            font-weight: 600;
+            margin: 4px 0;
+        }
+        .update-item .desc {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.9em;
+        }
+
+        /* Package Grid */
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .package-card {
+            position: relative;
+            background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(168,85,247,0.05));
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .package-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            right: 0; bottom: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .package-card:hover::before {
+            opacity: 1;
+        }
+        .package-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 30px rgba(0,212,255,0.15);
+        }
+        .package-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(168,85,247,0.15));
+            box-shadow: 0 0 25px rgba(0,212,255,0.25), inset 0 0 20px rgba(0,212,255,0.05);
+        }
+        .package-card.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            color: var(--primary);
+            font-size: 0.8em;
+            text-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+        .package-card .amount {
+            position: relative;
+            font-size: 1.8em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: 1;
+        }
+        .package-card .label {
+            position: relative;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8em;
+            margin-top: 6px;
+            z-index: 1;
+        }
+        .package-card.selected .label {
+            color: var(--primary);
+        }
+        @media (max-width: 600px) {
+            .package-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 440px;
+            width: 90%;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal h3 {
+            margin-bottom: 16px;
+            font-size: 1.3em;
+        }
+        .modal p {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
+
+        /* Points display in topbar */
+        .points-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,193,7,0.1);
+            border: 1px solid rgba(255,193,7,0.2);
+            border-radius: 10px;
+            color: #ffc107;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .points-display i {
+            font-size: 1em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .borrow-form .form-row {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .menu-toggle {
+                display: flex !important;
+            }
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 99;
+            background: rgba(0,0,0,0.5);
+        }
+        @media (max-width: 768px) {
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+        .highlight {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <canvas id="particles-canvas"></canvas>
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h2>นาย ชาเย็น</h2>
+            <small>ระบบยืมเงินอัจฉริยะ</small>
+        </div>
+        <div class="sidebar-menu">
+            <button class="menu-item active" onclick="showSection('home')">
+                <i class="fas fa-home"></i> หน้าแรก
+            </button>
+            <button class="menu-item" onclick="showSection('borrow')">
+                <i class="fas fa-hand-holding-usd"></i> ยืมเงิน
+                <span class="badge">ใหม่</span>
+            </button>
+            <button class="menu-item" onclick="showSection('history')">
+                <i class="fas fa-history"></i> ประวัติ
+            </button>
+            <button class="menu-item" onclick="showSection('update')">
+                <i class="fas fa-sync-alt"></i> อัพเดตระบบ
+            </button>
+        </div>
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar">U</div>
+            <div class="user-info-sidebar">
+                <div class="name" id="sidebarName">ผู้ใช้</div>
+                <div class="role" id="sidebarRole">สมาชิก</div>
+            </div>
+            <button onclick="logout()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:1.1em;" title="ออกจากระบบ">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>หน้าแรก <span>Dashboard</span></h1>
+            </div>
+            <div class="topbar-right">
+                <div class="points-display">
+                    <i class="fas fa-coins"></i>
+                    <span id="userPoints">0</span> แต้ม
+                </div>
+                <div class="date-display" id="dateDisplay"></div>
+            </div>
+        </div>
+
+        <!-- Section: Home -->
+        <div class="section active" id="section-home">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-value" id="statPoints">0</div>
+                    <div class="stat-label">แต้มคงเหลือ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="stat-value" id="statBorrowed">0</div>
+                    <div class="stat-label">ยืมทั้งหมด</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pink"><i class="fas fa-credit-card"></i></div>
+                    <div class="stat-value" id="statPending">0</div>
+                    <div class="stat-label">รออนุมัติ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value" id="statApproved">0</div>
+                    <div class="stat-label">อนุมัติแล้ว</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-bolt"></i> ยินดีต้อนรับ</div>
+                <p style="color:rgba(255,255,255,0.6);line-height:1.8;">
+                    สวัสดีคุณ <strong id="welcomeUser" style="color:var(--primary);">ผู้ใช้</strong>!
+                    ยินดีต้อนรับสู่ระบบยืมเงินอัจฉริยะ นาย ชาเย็น
+                    คุณสามารถยืมเงินได้ง่าย ๆ เพียงไม่กี่คลิก
+                </p>
+                <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="showSection('borrow')">
+                        <i class="fas fa-hand-holding-usd"></i> ยืมเงินตอนนี้
+                    </button>
+                    <button class="btn btn-outline" onclick="showSection('history')">
+                        <i class="fas fa-history"></i> ดูประวัติ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Borrow -->
+        <div class="section" id="section-borrow">
+            <div class="section-header">
+                <h2><i class="fas fa-hand-holding-usd" style="color:var(--primary);"></i> ยืมเงิน</h2>
+                <p>เลือกแพ็กเกจและกรอกข้อมูลเพื่อยืมเงิน</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-box"></i> เลือกแพ็กเกจ</div>
+                <div class="package-grid" id="packageGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-file-invoice"></i> รายละเอียดการยืม</div>
+                <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.85em;color:var(--primary);">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>1 วันคืน</strong> — คืนเท่าเดิม ไม่มีดอกเบี้ย | 
+                    <strong>เกิน 1 วัน</strong> — คิดดอกเบี้ย <strong>10%</strong>
+                </div>
+                <div class="borrow-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>จำนวนเงิน (บาท)</label>
+                            <input type="number" id="borrowAmount" placeholder="เช่น 100" oninput="calcBorrowSummary()">
+                        </div>
+                        <div class="form-group">
+                            <label>ระยะเวลา (วัน)</label>
+                            <input type="number" id="borrowDays" placeholder="เช่น 1" value="1" oninput="calcBorrowSummary()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ยอดที่ต้องชำระ</label>
+                        <input type="text" id="borrowTotal" readonly value="0 บาท">
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="submitBorrow()">
+                            <i class="fas fa-paper-plane"></i> ส่งคำขอยืม
+                        </button>
+                        <button class="btn btn-outline" onclick="resetBorrowForm()">
+                            <i class="fas fa-undo"></i> รีเซ็ต
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: History -->
+        <div class="section" id="section-history">
+            <div class="section-header">
+                <h2><i class="fas fa-history" style="color:var(--primary);"></i> ประวัติการยืม</h2>
+                <p>ตรวจสอบสถานะคำขอยืมเงินทั้งหมดของคุณ</p>
+            </div>
+            <div class="card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>วันที่</th>
+                                <th>จำนวน</th>
+                                <th>ระยะเวลา</th>
+                                <th>ดอกเบี้ย</th>
+                                <th>ยอดชำระ</th>
+                                <th>สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.3);">ไม่มีประวัติ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Update -->
+        <div class="section" id="section-update">
+            <div class="section-header">
+                <h2><i class="fas fa-sync-alt" style="color:var(--primary);"></i> อัพเดตระบบ</h2>
+                <p>ข่าวสารอัพเดตและการเปลี่ยนแปลงล่าสุดของระบบ</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-clock"></i> ประวัติอัพเดต</div>
+                <div class="update-timeline" id="updateTimeline">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div class="card" id="adminUpdateCard" style="display:none;">
+                <div class="card-title"><i class="fas fa-tools"></i> เพิ่มอัพเดต (ผู้ดูแล)</div>
+                <div class="form-group">
+                    <label>หัวข้อ</label>
+                    <input type="text" id="updateTitle" placeholder="เช่น อัพเดตเวอร์ชัน 2.0">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียด</label>
+                    <input type="text" id="updateDesc" placeholder="รายละเอียดอัพเดต">
+                </div>
+                <button class="btn btn-primary" onclick="addUpdate()">
+                    <i class="fas fa-plus"></i> เพิ่มอัพเดต
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3><i class="fas fa-check-circle" style="color:var(--primary);"></i> ยืนยันการยืม</h3>
+            <p id="confirmText">คุณต้องการยืมเงินจำนวน 0 บาท ใช่หรือไม่?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="confirmBorrow()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIG =====
+        const CONFIG = {
+            PACKAGES: [
+                { amount: 10, label: '10 บาท' },
+                { amount: 30, label: '30 บาท' },
+                { amount: 50, label: '50 บาท' },
+                { amount: 100, label: '100 บาท' },
+                { amount: 200, label: '200 บาท' },
+                { amount: 300, label: '300 บาท' }
+            ],
+            DEFAULT_INTEREST: 0,
+            OVERDUE_INTEREST: 10,
+            DEFAULT_DAYS: 1
+        };
+
+        let currentUser = null;
+        let userData = null;
+        let pendingBorrow = null;
+
+        // ===== PARTICLES =====
+        function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const particles = Array.from({ length: 80 }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                r: Math.random() * 2 + 1,
+                alpha: Math.random() * 0.5 + 0.2
+            }));
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0) p.x = w;
+                    if (p.x > w) p.x = 0;
+                    if (p.y < 0) p.y = h;
+                    if (p.y > h) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 212, 255, ${p.alpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+        initParticles();
+
+        // ===== TOAST =====
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ===== DATE =====
+        function updateDate() {
+            const now = new Date();
+            const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+            const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                           'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+            document.getElementById('dateDisplay').textContent =
+                `วัน${days[now.getDay()]}ที่ ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+        }
+        updateDate();
+
+        // ===== AUTH CHECK =====
+        function checkAuth() {
+            const username = sessionStorage.getItem('username');
+            if (!username) {
+                window.location.href = '/';
+                return null;
+            }
+            return username;
+        }
+
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+        }
+
+        // ===== NAVIGATION =====
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(`section-${name}`).classList.add('active');
+            document.querySelector(`.menu-item[onclick*="'${name}'"]`)?.classList.add('active');
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('show');
+            }
+            if (name === 'history') loadHistory();
+            if (name === 'update') loadUpdates();
+        }
+
+        // ===== LOAD USER =====
+        async function loadUserData() {
+            const username = checkAuth();
+            if (!username) return;
+
+            try {
+                const res = await fetch('/api/user/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    userData = data.user;
+                    updateUI(data.user);
+                }
+            } catch (e) {
+                showToast('ไม่สามารถโหลดข้อมูลผู้ใช้', 'error');
+            }
+        }
+
+        function updateUI(user) {
+            document.getElementById('sidebarAvatar').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('sidebarName').textContent = user.username;
+            document.getElementById('sidebarRole').textContent = user.role === 'dev' ? 'ผู้พัฒนา' : 'สมาชิก';
+            document.getElementById('welcomeUser').textContent = user.username;
+
+            const points = user.points || 0;
+            document.getElementById('userPoints').textContent = points.toLocaleString();
+            document.getElementById('statPoints').textContent = points.toLocaleString();
+
+            const borrowed = user.totalBorrowed || 0;
+            const pending = user.pendingBorrows || 0;
+            const approved = user.approvedBorrows || 0;
+
+            document.getElementById('statBorrowed').textContent = borrowed.toLocaleString();
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+
+            // Admin update card
+            if (user.role === 'dev') {
+                document.getElementById('adminUpdateCard').style.display = 'block';
+            }
+        }
+
+        // ===== BORROW - PACKAGES =====
+        function initPackages() {
+            const grid = document.getElementById('packageGrid');
+            grid.innerHTML = CONFIG.PACKAGES.map(p =>
+                `<div class="package-card" onclick="selectPackage(${p.amount}, this)">
+                    <div class="amount">${p.label}</div>
+                    <div class="label">เลือก</div>
+                </div>`
+            ).join('');
+        }
+        initPackages();
+
+        let selectedAmount = 0;
+        function selectPackage(amount, el) {
+            document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAmount = amount;
+            document.getElementById('borrowAmount').value = amount;
+            calcBorrowSummary();
+            showToast(`เลือกแพ็กเกจ ${amount.toLocaleString()} บาท`, 'success');
+        }
+
+        function calcBorrowSummary() {
+            const amount = parseFloat(document.getElementById('borrowAmount').value) || 0;
+            const days = parseFloat(document.getElementById('borrowDays').value) || 0;
+            const interest = days > 1 ? CONFIG.OVERDUE_INTEREST : CONFIG.DEFAULT_INTEREST;
+            const total = amount + (amount * interest / 100);
+            document.getElementById('borrowTotal').value = total.toLocaleString() + ' บาท';
+        }
+
+        function resetBorrowForm() {
+            document.getElementById('borrowAmount').value = '';
+            document.getElementById('borrowDays').value = CONFIG.DEFAULT_DAYS;
+            document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+            selectedAmount = 0;
+            calcBorrowSummary();
+        }
+
+        // ===== SUBMIT BORROW =====
+        function submitBorrow() {
+            const amount = parseFloat(document.getElementById('borrowAmount').value);
+            const days = parseFloat(document.getElementById('borrowDays').value);
+            const interest = days > 1 ? CONFIG.OVERDUE_INTEREST : CONFIG.DEFAULT_INTEREST;
+
+            if (!amount || amount <= 0) {
+                showToast('กรุณากรอกจำนวนเงินที่ต้องการยืม', 'error');
+                return;
+            }
+            if (!days || days <= 0) {
+                showToast('กรุณากรอกจำนวนวันที่ต้องการยืม', 'error');
+                return;
+            }
+
+            const total = amount + (amount * interest / 100);
+            pendingBorrow = { amount, days, interest, total };
+            const rateText = days > 1 ? `ดอกเบี้ย <strong>${interest}%</strong> (เกิน 1 วัน)` : 'ดอกเบี้ย <strong>0%</strong> (1 วันคืน)';
+            document.getElementById('confirmText').innerHTML =
+                `คุณต้องการยืมเงิน <strong>${amount.toLocaleString()} บาท</strong><br>
+                 ระยะเวลา <strong>${days} วัน</strong><br>
+                 ${rateText}<br>
+                 ยอดชำระทั้งหมด <strong style="color:var(--primary);">${total.toLocaleString()} บาท</strong>`;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            pendingBorrow = null;
+        }
+
+        async function confirmBorrow() {
+            if (!pendingBorrow) return;
+            const username = sessionStorage.getItem('username');
+
+            try {
+                const res = await fetch('/api/borrow/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, ...pendingBorrow })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('ส่งคำขอยืมเงินสำเร็จ!', 'success');
+                    resetBorrowForm();
+                    loadUserData();
+                } else {
+                    showToast(data.message || 'เกิดข้อผิดพลาด', 'error');
+                }
+            } catch (e) {
+                showToast('ไม่สามารถส่งคำขอได้', 'error');
+            }
+            closeModal();
+        }
+
+        // ===== HISTORY =====
+        async function loadHistory() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+
+            try {
+                const res = await fetch('/api/borrow/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('historyBody');
+                if (data.success && data.history && data.history.length > 0) {
+                    tbody.innerHTML = data.history.map(h => `
+                        <tr>
+                            <td>${new Date(h.date).toLocaleDateString('th-TH')}</td>
+                            <td>${h.amount.toLocaleString()}</td>
+                            <td>${h.days} วัน</td>
+                            <td>${h.interest}%</td>
+                            <td>${h.total.toLocaleString()}</td>
+                            <td><span class="status ${h.status}">${statusThai(h.status)}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.3);">ไม่มีประวัติ</td></tr>';
+                }
+            } catch (e) {
+                showToast('ไม่สามารถโหลดประวัติได้', 'error');
+            }
+        }
+
+        function statusThai(s) {
+            const map = { pending: 'รออนุมัติ', approved: 'อนุมัติ', rejected: 'ปฏิเสธ', completed: 'สำเร็จ' };
+            return map[s] || s;
+        }
+
+        // ===== UPDATES =====
+        async function loadUpdates() {
+            try {
+                const res = await fetch('/api/system/updates');
+                const data = await res.json();
+                const timeline = document.getElementById('updateTimeline');
+                if (data.success && data.updates && data.updates.length > 0) {
+                    timeline.innerHTML = data.updates.map(u => `
+                        <div class="update-item">
+                            <div class="date">${new Date(u.date).toLocaleDateString('th-TH')}</div>
+                            <div class="title">${u.title}</div>
+                            <div class="desc">${u.description}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    timeline.innerHTML = '<div style="color:rgba(255,255,255,0.3);text-align:center;padding:20px;">ยังไม่มีอัพเดต</div>';
+                }
+            } catch (e) {
+                showToast('ไม่สามารถโหลดอัพเดตได้', 'error');
+            }
+        }
+
+        async function addUpdate() {
+            const title = document.getElementById('updateTitle').value;
+            const description = document.getElementById('updateDesc').value;
+            if (!title || !description) {
+                showToast('กรุณากรอกข้อมูลให้ครบ', 'error');
+                return;
+            }
+            try {
+                const res = await fetch('/api/system/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('เพิ่มอัพเดตสำเร็จ!', 'success');
+                    document.getElementById('updateTitle').value = '';
+                    document.getElementById('updateDesc').value = '';
+                    loadUpdates();
+                } else {
+                    showToast(data.message || 'เกิดข้อผิดพลาด', 'error');
+                }
+            } catch (e) {
+                showToast('ไม่สามารถเพิ่มอัพเดตได้', 'error');
+            }
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/';
+        }
+
+        // ===== INIT =====
+        loadUserData();
+    </script>
+</body>
+</html>

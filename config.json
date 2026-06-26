@@ -1,0 +1,30 @@
+{
+  "pricing": {
+    "firstKeyPrice": 500,
+    "renewalPackages": [
+      {
+        "days": 60,
+        "points": 170,
+        "label": "60 ห้อม"
+      },
+      {
+        "days": 170,
+        "points": 300,
+        "label": "170 ห้อม"
+      },
+      {
+        "days": 300,
+        "points": 500,
+        "label": "300 ห้อม"
+      },
+      {
+        "days": 365,
+        "points": 6000,
+        "label": "6000 ห้อม"
+      }
+    ]
+  },
+  "registration": {
+    "welcomePoints": 50
+  }
+}
