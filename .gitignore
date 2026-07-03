@@ -3,6 +3,7 @@ screenshots/
 *.log
 .env
 *.mp4
+!VIEDD/*.mp4
 *.rar
 .vscode/
 
