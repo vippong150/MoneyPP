@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONEY - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #00d4ff;
+            --secondary: #a855f7;
+            --accent: #ff6b9d;
+            --dark: #0a0a1a;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--dark);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0,212,255,0.1);
+            padding-bottom: 10px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+        }
+        .tab:hover {
+            transform: translateY(-2px);
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .request-grid, .slip-grid {
+            display: grid;
+            gap: 16px;
+        }
+        .request-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .request-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0,212,255,0.2);
+        }
+        .request-info h3 {
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 1.3em;
+        }
+        .request-info p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95em;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .request-info p i {
+            width: 20px;
+            color: var(--primary);
+        }
+        .wallet-highlight {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+        .wallet-highlight strong {
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+        .interest-box {
+            background: rgba(255,193,7,0.1);
+            border: 1px solid rgba(255,193,7,0.3);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+        .interest-box strong {
+            color: #ffc107;
+        }
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .slip-grid {
+            display: grid;
+            gap: 16px;
+        }
+        .slip-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 150px 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+        .slip-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid rgba(0,212,255,0.3);
+            cursor: pointer;
+        }
+        .slip-info h3 {
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        .slip-info p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9em;
+            margin: 4px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46,204,113,0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b7a, #ff4757);
+            color: #fff;
+        }
+        .btn-logout {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .badge {
+            background: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+        @media (max-width: 768px) {
+            .request-item {
+                grid-template-columns: 1fr;
+            }
+            .slip-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-shield-alt"></i> MONEY Admin Panel</h1>
+                <p style="color:rgba(255,255,255,0.5);">จัดการคำขอยืมและตรวจสอบสลิป</p>
+            </div>
+            <button class="btn btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('requests')">
+                <i class="fas fa-clock"></i> คำขอรออนุมัติ
+                <span class="badge" id="requestCount">0</span>
+            </div>
+            <div class="tab" onclick="switchTab('slips')">
+                <i class="fas fa-receipt"></i> สลิปคืนเงินรอตรวจสอบ
+                <span class="badge" id="slipCount">0</span>
+            </div>
+            <div class="tab" onclick="switchTab('returnSlips')">
+                <i class="fas fa-images"></i> คลังสลิป (ทั้งหมด)
+            </div>
+            <div class="tab" onclick="switchTab('register')">
+                <i class="fas fa-user-plus"></i> สมัครสมาชิก
+            </div>
+            <div class="tab" onclick="switchTab('users')">
+                <i class="fas fa-users"></i> รายชื่อผู้ใช้
+            </div>
+            <div class="tab" onclick="switchTab('balance')">
+                <i class="fas fa-wallet"></i> จัดการกระเป๋าเงิน
+            </div>
+            <div class="tab" onclick="switchTab('payment')">
+                <i class="fas fa-money-check-alt"></i> ตั้งค่าการชำระเงิน
+            </div>
+        </div>
+
+        <!-- Section: Pending Requests -->
+        <div class="section active" id="section-requests">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-clock"></i> คำขอยืมรออนุมัติ</h2>
+                <div class="request-grid" id="requestGrid">
+                    <p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px 0;">ไม่มีคำขอรออนุมัติ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Slips -->
+        <div class="section" id="section-slips">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-receipt"></i> สลิปคืนเงินรอตรวจสอบ</h2>
+                <div class="slip-grid" id="slipGrid">
+                    <p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px 0;">ไม่มีสลิปรออนุมัติ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Return Slips Gallery -->
+        <div class="section" id="section-returnSlips">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-images"></i> คลังสลิปคืนเงิน (ทั้งหมด)</h2>
+                <div id="returnSlipsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Register User -->
+        <div class="section" id="section-register">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-user-plus"></i> สมัครสมาชิก (DEV เท่านั้น)</h2>
+                <div style="max-width:400px;">
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:rgba(255,255,255,0.6);margin-bottom:8px;font-size:0.85em;">ชื่อผู้ใช้</label>
+                        <input type="text" id="newUsername" placeholder="กรอกชื่อผู้ใช้" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:rgba(255,255,255,0.6);margin-bottom:8px;font-size:0.85em;">รหัสผ่าน</label>
+                        <input type="password" id="newPassword" placeholder="กรอกรหัสผ่าน" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;">
+                    </div>
+                    <button class="btn btn-success" onclick="registerUser()">
+                        <i class="fas fa-user-plus"></i> สมัครสมาชิก
+                    </button>
+                    <div id="regMessage" style="margin-top:12px;font-size:0.9em;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: All Users -->
+        <div class="section" id="section-users">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-users"></i> รายชื่อผู้ใช้ทั้งหมด</h2>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid rgba(0,212,255,0.2);">
+                                <th style="padding:12px 8px;text-align:left;color:rgba(255,255,255,0.5);font-size:0.8em;">ชื่อผู้ใช้</th>
+                                <th style="padding:12px 8px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8em;">เลเวล</th>
+                                <th style="padding:12px 8px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8em;">แต้ม</th>
+                                <th style="padding:12px 8px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8em;">ยืมได้สูงสุด</th>
+                                <th style="padding:12px 8px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8em;">ยืนยันตัวตน</th>
+                                <th style="padding:12px 8px;text-align:left;color:rgba(255,255,255,0.5);font-size:0.8em;">สร้างเมื่อ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.3);">กำลังโหลด...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Balance Management -->
+        <div class="section" id="section-balance">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-wallet"></i> จัดการกระเป๋าเงินผู้ใช้ (DEV เท่านั้น)</h2>
+                <p style="color:rgba(255,255,255,0.5);margin-bottom:24px;">เติมเงิน/หักเงิน เข้ากระเป๋าผู้ใช้ (รองรับยอดติดลบ)</p>
+                
+                <div style="max-width:500px;background:rgba(0,212,255,0.08);border:2px solid rgba(0,212,255,0.2);border-radius:14px;padding:24px;">
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">
+                            <i class="fas fa-user"></i> ชื่อผู้ใช้
+                        </label>
+                        <input type="text" id="balanceUsername" placeholder="ชื่อผู้ใช้" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;">
+                    </div>
+                    
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">
+                            <i class="fas fa-coins"></i> จำนวนเงิน (บาท)
+                        </label>
+                        <input type="number" id="balanceAmount" step="0.01" placeholder="100.50 (+ เติม, - หัก)" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1.1em;font-weight:700;">
+                        <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px;">
+                            • ใส่เลขบวก (+) เพื่อเติมเงิน<br>
+                            • ใส่เลขลบ (-) เพื่อหักเงิน<br>
+                            • รองรับทศนิยม 2 ตำแหน่ง (เช่น 50.75)
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">
+                            <i class="fas fa-comment"></i> เหตุผล (ไม่บังคับ)
+                        </label>
+                        <input type="text" id="balanceReason" placeholder="เช่น: โบนัสพิเศษ, ค่าปรับ" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:0.95em;">
+                    </div>
+                    
+                    <button onclick="adjustBalance()" style="width:100%;padding:14px;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;border-radius:10px;color:#fff;font-size:1em;font-weight:700;cursor:pointer;transition:all 0.3s;">
+                        <i class="fas fa-check-circle"></i> ยืนยันการปรับยอด
+                    </button>
+                </div>
+                
+                <div style="margin-top:24px;padding:16px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;">
+                    <div style="color:#ffc107;font-weight:600;margin-bottom:8px;">
+                        <i class="fas fa-info-circle"></i> ตัวอย่างการใช้งาน:
+                    </div>
+                    <div style="font-size:0.9em;color:rgba(255,255,255,0.7);line-height:1.8;">
+                        • เติมเงิน 100 บาท: ใส่ <strong style="color:#2ecc71;">100</strong><br>
+                        • หักเงิน 50 บาท: ใส่ <strong style="color:#ff4757;">-50</strong><br>
+                        • เติม 25.50 บาท: ใส่ <strong style="color:#2ecc71;">25.50</strong><br>
+                        • หัก 10.25 บาท: ใส่ <strong style="color:#ff4757;">-10.25</strong><br>
+                        • ยอดเงินสามารถติดลบได้
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Payment Config -->
+        <div class="section" id="section-payment">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-money-check-alt"></i> ตั้งค่าการชำระเงิน (DEV เท่านั้น)</h2>
+                <p style="color:rgba(255,255,255,0.5);margin-bottom:24px;">แก้ไขข้อมูลบัญชีสำหรับรับเงินคืน (ทุกคนจะเห็นข้อมูลนี้)</p>
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;">
+                    <!-- TrueMoney Wallet -->
+                    <div style="background:rgba(255,107,157,0.08);border:2px solid rgba(255,107,157,0.2);border-radius:14px;padding:24px;">
+                        <h3 style="color:#ff6b9d;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                            <i class="fas fa-wallet"></i> TrueMoney Wallet
+                        </h3>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">เลขบัญชี (10 หลัก)</label>
+                            <input type="text" id="truemoneyNumber" maxlength="10" placeholder="0000000000" style="width:100%;padding:12px;border:1px solid rgba(255,107,157,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;font-family:monospace;letter-spacing:2px;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">ชื่อบัญชี</label>
+                            <input type="text" id="truemoneyName" placeholder="TRUEMONEY" style="width:100%;padding:12px;border:1px solid rgba(255,107,157,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">QR Code (ถ้ามี)</label>
+                            <input type="file" id="truemoneyQR" accept="image/*" style="width:100%;padding:8px;border:1px solid rgba(255,107,157,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:0.9em;">
+                            <div id="truemoneyQRPreview" style="margin-top:12px;text-align:center;">
+                                <!-- Preview will be shown here -->
+                            </div>
+                        </div>
+                        
+                        <button onclick="updateTruemoneyConfig()" style="width:100%;padding:12px;background:linear-gradient(135deg,#ff6b9d,#ff4757);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;transition:all 0.3s;">
+                            <i class="fas fa-save"></i> บันทึก TrueMoney
+                        </button>
+                    </div>
+                    
+                    <!-- Bank Account -->
+                    <div style="background:rgba(0,212,255,0.08);border:2px solid rgba(0,212,255,0.2);border-radius:14px;padding:24px;">
+                        <h3 style="color:#00d4ff;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                            <i class="fas fa-university"></i> ธนาคาร
+                        </h3>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">ชื่อธนาคาร</label>
+                            <input type="text" id="bankName" placeholder="ธนาคารกรุงเทพ" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">เลขบัญชี (10 หลัก)</label>
+                            <input type="text" id="bankNumber" maxlength="10" placeholder="0000000000" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;font-family:monospace;letter-spacing:2px;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">ชื่อบัญชี</label>
+                            <input type="text" id="bankAccountName" placeholder="ชื่อเจ้าของบัญชี" style="width:100%;padding:12px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:1em;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">QR Code (ถ้ามี)</label>
+                            <input type="file" id="bankQR" accept="image/*" style="width:100%;padding:8px;border:1px solid rgba(0,212,255,0.3);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:0.9em;">
+                            <div id="bankQRPreview" style="margin-top:12px;text-align:center;">
+                                <!-- Preview will be shown here -->
+                            </div>
+                        </div>
+                        
+                        <button onclick="updateBankConfig()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;transition:all 0.3s;">
+                            <i class="fas fa-save"></i> บันทึกธนาคาร
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="paymentMessage" style="margin-top:20px;padding:12px;border-radius:8px;display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const adminUsername = sessionStorage.getItem('username');
+        const role = sessionStorage.getItem('role');
+
+        // Check auth
+        if (!adminUsername || (role !== 'admin' && role !== 'dev')) {
+            window.location.href = '/';
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            if (tab === 'requests') {
+                tabs[0].classList.add('active');
+                document.getElementById('section-requests').classList.add('active');
+            } else if (tab === 'slips') {
+                tabs[1].classList.add('active');
+                document.getElementById('section-slips').classList.add('active');
+            } else if (tab === 'returnSlips') {
+                tabs[2].classList.add('active');
+                document.getElementById('section-returnSlips').classList.add('active');
+                loadReturnSlips();
+            } else if (tab === 'register') {
+                tabs[3].classList.add('active');
+                document.getElementById('section-register').classList.add('active');
+            } else if (tab === 'users') {
+                tabs[4].classList.add('active');
+                document.getElementById('section-users').classList.add('active');
+                loadAllUsers();
+            } else if (tab === 'balance') {
+                tabs[5].classList.add('active');
+                document.getElementById('section-balance').classList.add('active');
+            } else if (tab === 'payment') {
+                tabs[6].classList.add('active');
+                document.getElementById('section-payment').classList.add('active');
+                loadPaymentConfig();
+            }
+        }
+        
+        // Adjust user balance
+        async function adjustBalance() {
+            const username = document.getElementById('balanceUsername').value.trim();
+            const amount = parseFloat(document.getElementById('balanceAmount').value);
+            const reason = document.getElementById('balanceReason').value.trim();
+            
+            if (!username) {
+                alert('กรุณาใส่ชื่อผู้ใช้');
+                return;
+            }
+            
+            if (isNaN(amount) || amount === 0) {
+                alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
+                return;
+            }
+            
+            const actionText = amount > 0 ? `เติมเงิน ${amount.toFixed(2)} บาท` : `หักเงิน ${Math.abs(amount).toFixed(2)} บาท`;
+            if (!confirm(`ยืนยัน${actionText} ให้ ${username}${reason ? ` (${reason})` : ''}?`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/admin/adjust-balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        adminUsername, 
+                        targetUsername: username, 
+                        amount: amount,
+                        reason: reason
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('balanceUsername').value = '';
+                    document.getElementById('balanceAmount').value = '';
+                    document.getElementById('balanceReason').value = '';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (e) {
+                console.error('Adjust balance error:', e);
+                alert('เกิดข้อผิดพลาด');
+            }
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await fetch('/api/admin/pending-borrows', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername })
+                });
+                const data = await res.json();
+                
+                document.getElementById('requestCount').textContent = data.borrows?.length || 0;
+                
+                if (data.success && data.borrows.length > 0) {
+                    renderRequests(data.borrows);
+                } else {
+                    document.getElementById('requestGrid').innerHTML = 
+                        '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px 0;">ไม่มีคำขอรออนุมัติ</p>';
+                }
+            } catch (e) {
+                console.error('Error loading requests:', e);
+            }
+        }
+
+        function renderRequests(requests) {
+            const grid = document.getElementById('requestGrid');
+            grid.innerHTML = requests.map(req => {
+                const borrowAmount = parseFloat(req.amount);
+                const interestPerDay = (borrowAmount * 0.01).toFixed(2); // 1% per day
+                const totalDay1 = borrowAmount.toFixed(2);
+                const totalDay2 = (borrowAmount + parseFloat(interestPerDay)).toFixed(2);
+                const totalDay3 = (borrowAmount + parseFloat(interestPerDay) * 2).toFixed(2);
+                const totalDay7 = (borrowAmount + parseFloat(interestPerDay) * 6).toFixed(2);
+                
+                const borrowDate = new Date(req.date);
+                const dueDate = new Date(req.dueDate);
+                const now = new Date();
+                const hoursLeft = Math.max(0, (dueDate - now) / (1000 * 60 * 60));
+                const timeStatus = hoursLeft > 0 ? `<strong style="color:#2ecc71;">เหลือเวลา ${hoursLeft.toFixed(1)} ชม.</strong>` : `<strong style="color:#ff4757;">เกินกำหนดแล้ว!</strong>`;
+                
+                return `
+                <div class="request-item" data-amount="${borrowAmount}">
+                    <div class="request-info">
+                        <h3><i class="fas fa-user"></i> ${req.username}</h3>
+                        <p><i class="fas fa-money-bill-wave"></i> ยอดยืม: <strong style="color:#2ecc71;font-size:1.3em;">${borrowAmount.toFixed(2)} บาท</strong></p>
+                        <p><i class="fas fa-calendar"></i> ยืมได้นาน: <strong>1 วัน (24 ชั่วโมง)</strong></p>
+                        <p><i class="fas fa-clock"></i> ยืมเมื่อ: ${borrowDate.toLocaleString('th-TH')}</p>
+                        <p><i class="fas fa-hourglass-end"></i> ครบกำหนด: ${dueDate.toLocaleString('th-TH')}</p>
+                        <p data-due-date="${dueDate.toISOString()}" data-amount="${borrowAmount}"><i class="fas fa-stopwatch"></i> ${timeStatus}</p>
+                        <p><i class="fas fa-hashtag"></i> ID: ${req.id}</p>
+                        
+                        <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:12px 16px;margin:10px 0;">
+                            <div style="font-size:0.9em;color:rgba(255,255,255,0.6);margin-bottom:8px;">
+                                <i class="fas fa-id-card"></i> <strong style="color:var(--secondary);">ข้อมูลผู้ยืม (ยืนยันตัวตนแล้ว):</strong>
+                            </div>
+                            <div style="font-size:0.95em;">
+                                👤 ชื่อ: <strong style="color:#fff;">${req.userFullName}</strong><br>
+                                📱 เบอร์วอเลท (ยืนยันแล้ว): <strong style="color:var(--primary);">${req.userVerifiedWallet}</strong><br>
+                                ${req.userVerified ? '<span style="color:#2ecc71;">✅ ยืนยันตัวตนแล้ว</span>' : '<span style="color:#ff6b9d;">❌ ยังไม่ยืนยันตัวตน</span>'}
+                            </div>
+                        </div>
+                        
+                        <div class="wallet-highlight">
+                            <i class="fas fa-wallet"></i> เบอร์วอเลทที่กรอกตอนยืม: <strong>${req.walletNumber}</strong><br>
+                            <span style="font-size:0.85em;color:rgba(255,255,255,0.6);">ชื่อบัญชี: <strong>${req.accountName || 'ไม่ระบุ'}</strong></span>
+                            <div style="margin-top:8px;font-size:0.85em;color:rgba(255,255,255,0.6);">
+                                ⚠️ โอนเงินไปที่เลขนี้เมื่ออนุมัติ
+                            </div>
+                        </div>
+                        
+                        <div class="interest-box">
+                            <i class="fas fa-calculator"></i> <strong>รายละเอียดการชำระเงิน:</strong><br><br>
+                            
+                            <div style="background:rgba(0,212,255,0.1);border:2px solid rgba(0,212,255,0.4);padding:12px 16px;border-radius:8px;margin:10px 0;font-size:1.05em;">
+                                💡 <strong>อัตราดอกเบี้ย: 0.20% ต่อ 1 วัน (ถ้าเกินกำหนด)</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;• ยืม 10 บาท = คิดดอก <strong style="color:var(--primary);">0.20%</strong> → ดอก ${(borrowAmount * 0.002).toFixed(2)} บาท/วัน<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;• ยืม ${borrowAmount.toFixed(2)} บาท = คิดดอก <strong style="color:var(--primary);">0.20%</strong> → ดอก <strong style="color:var(--primary);">${interestPerDay} บาท/วัน</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;• ยืม 100 บาท = คิดดอก <strong style="color:var(--primary);">0.20%</strong> → ดอก ${(100 * 0.002).toFixed(2)} บาท/วัน
+                            </div>
+                            
+                            <div style="background:rgba(46,204,113,0.15);padding:12px 16px;border-radius:8px;margin:10px 0;">
+                                ✅ <strong>คืนภายใน 24 ชั่วโมง:</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;ยืม ${borrowAmount.toFixed(2)} บาท → จ่าย = <strong style="color:#2ecc71;font-size:1.3em;">${totalDay1} บาท</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#2ecc71;font-size:1.05em;">✓ ไม่มีดอกเบี้ย ไม่หักเครดิต</span>
+                            </div>
+                            
+                            <div style="background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.3);padding:12px 16px;border-radius:8px;margin:10px 0;">
+                                ⚠️ <strong>วันที่ 2 (เกิน 24 ชม. - 1 วัน):</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;ยืม ${borrowAmount.toFixed(2)} บาท → จ่าย = <strong style="color:#ffc107;font-size:1.3em;">${totalDay2} บาท</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;= ต้นเงิน ${borrowAmount.toFixed(2)} + ดอก ${interestPerDay} บาท (0.20%)<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ff4757;font-size:1.05em;">⚠ หัก 1 เครดิต (เหลือ 59)</span>
+                            </div>
+                            
+                            <div style="background:rgba(255,107,157,0.15);border:1px solid rgba(255,107,157,0.3);padding:12px 16px;border-radius:8px;margin:10px 0;">
+                                ⚠️ <strong>วันที่ 3 (เกิน 2 วัน):</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;ยืม ${borrowAmount.toFixed(2)} บาท → จ่าย = <strong style="color:#ff6b9d;font-size:1.3em;">${totalDay3} บาท</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;= ต้นเงิน ${borrowAmount.toFixed(2)} + ดอก ${(parseFloat(interestPerDay) * 2).toFixed(2)} บาท (0.20% × 2 วัน)<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ff4757;font-size:1.05em;">⚠ หัก 2 เครดิต (เหลือ 58)</span>
+                            </div>
+                            
+                            <div style="background:rgba(255,71,87,0.2);border:1px solid rgba(255,71,87,0.4);padding:12px 16px;border-radius:8px;margin:10px 0;">
+                                🔴 <strong>วันที่ 7 (เกิน 6 วัน):</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;ยืม ${borrowAmount.toFixed(2)} บาท → จ่าย = <strong style="color:#ff4757;font-size:1.3em;">${totalDay7} บาท</strong><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;= ต้นเงิน ${borrowAmount.toFixed(2)} + ดอก ${(parseFloat(interestPerDay) * 6).toFixed(2)} บาท (0.20% × 6 วัน)<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ff4757;font-size:1.05em;">🔴 หัก 6 เครดิต (เหลือ 54)</span>
+                            </div>
+                            
+                            <div style="border-top:2px solid rgba(255,193,7,0.3);margin-top:12px;padding-top:12px;font-size:0.95em;background:rgba(0,212,255,0.05);padding:12px;border-radius:8px;">
+                                📌 <strong>สรุปอัตราดอกเบี้ย:</strong><br>
+                                • <strong style="color:var(--primary);font-size:1.1em;">คิดดอก 0.20% ต่อ 1 วัน (ถ้าเกินกำหนด)</strong><br><br>
+                                <strong>ตัวอย่าง:</strong><br>
+                                • ยืม 10 บาท × 0.20% = ดอก <strong>0.02 บาท/วัน</strong><br>
+                                • ยืม 50 บาท × 0.20% = ดอก <strong>0.10 บาท/วัน</strong><br>
+                                • ยืม 100 บาท × 0.20% = ดอก <strong>0.20 บาท/วัน</strong><br>
+                                • ยืม 500 บาท × 0.20% = ดอก <strong>1.00 บาท/วัน</strong><br>
+                                • ยืม 1000 บาท × 0.20% = ดอก <strong>2.00 บาท/วัน</strong><br><br>
+                                <strong style="color:#ff4757;">⚠️ เกินกำหนดแต่ละวัน = หัก 1 เครดิต</strong><br>
+                                • เครดิตเริ่มต้น = <strong>60 เครดิต</strong><br>
+                                • เครดิตหมด (0) = <strong style="color:#ff4757;">ยืมไม่ได้!</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <button class="btn btn-success" onclick="approveRequest('${req.id}')">
+                            <i class="fas fa-check"></i> อนุมัติ
+                        </button>
+                        <button class="btn btn-primary" onclick="uploadSlipFor('${req.id}')" style="background:linear-gradient(135deg,#00d4ff,#a855f7);">
+                            <i class="fas fa-paperclip"></i> แนบสลิป
+                        </button>
+                        <button class="btn btn-danger" onclick="rejectRequest('${req.id}')">
+                            <i class="fas fa-times"></i> ปฏิเสธ
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function approveRequest(borrowId) {
+            if (!confirm('ยืนยันการอนุมัติคำขอยืมนี้?')) return;
+            
+            try {
+                const res = await fetch('/api/admin/approve-borrow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, borrowId })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('อนุมัติคำขอยืมสำเร็จ! เวลานับถอยหลัง 24 ชม. เริ่มแล้ว!');
+                    loadRequests();
+                    loadSlips();
+                } else {
+                    alert(data.message);
+                }
+            } catch (e) {
+                console.error('Approve error:', e);
+                alert('เกิดข้อผิดพลาด');
+            }
+        }
+
+        async function rejectRequest(borrowId) {
+            if (!confirm('ยืนยันการปฏิเสธคำขอยืมนี้?')) return;
+            
+            try {
+                const res = await fetch('/api/admin/reject-borrow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, borrowId })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('ปฏิเสธคำขอยืมสำเร็จ!');
+                    loadRequests();
+                    loadSlips();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (e) {
+                console.error('Reject error:', e);
+                alert('เกิดข้อผิดพลาด: ' + e.message);
+            }
+        }
+
+        async function loadSlips() {
+            try {
+                const res = await fetch('/api/admin/return-slips', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername })
+                });
+                const data = await res.json();
+                
+                // Filter only pending return slips
+                const pendingSlips = data.slips?.filter(s => s.status === 'return_pending') || [];
+                document.getElementById('slipCount').textContent = pendingSlips.length;
+                
+                if (data.success && pendingSlips.length > 0) {
+                    renderSlips(pendingSlips);
+                } else {
+                    document.getElementById('slipGrid').innerHTML = 
+                        '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:40px 0;">ไม่มีสลิปคืนเงินรออนุมัติ</p>';
+                }
+            } catch (e) {
+                console.error('Error loading slips:', e);
+            }
+        }
+
+        function renderSlips(slips) {
+            const grid = document.getElementById('slipGrid');
+            grid.innerHTML = slips.map(slip => {
+                const borrowDate = new Date(slip.borrowDate);
+                const uploadDate = new Date(slip.slipUploadDate);
+                const dueDate = new Date(slip.dueDate);
+                const now = new Date();
+                const isOverdue = now > dueDate;
+                const hoursLeft = Math.max(0, (dueDate - now) / (1000 * 60 * 60));
+                
+                return `
+                <div class="slip-item">
+                    <img src="${slip.slipUrl}" alt="Slip" class="slip-image" onclick="window.open('${slip.slipUrl}', '_blank')">
+                    <div class="slip-info">
+                        <h3><i class="fas fa-user"></i> ${slip.username}</h3>
+                        <p><i class="fas fa-money-bill-wave"></i> จำนวนเงิน: <strong style="color:#2ecc71;font-size:1.2em;">${slip.amount.toFixed(2)} บาท</strong></p>
+                        <p><i class="fas fa-calendar"></i> วันที่ยืม: ${borrowDate.toLocaleDateString('th-TH')}</p>
+                        <p><i class="fas fa-clock"></i> อัปโหลดสลิป: ${uploadDate.toLocaleString('th-TH')}</p>
+                        <p><i class="fas fa-hourglass-end"></i> กำหนดคืน: ${dueDate.toLocaleString('th-TH')}</p>
+                        <p style="color:${isOverdue ? '#ff4757' : '#ffc107'};font-weight:600;">
+                            <i class="fas fa-${isOverdue ? 'exclamation-triangle' : 'clock'}"></i> 
+                            ${isOverdue ? `เกินเวลาแล้ว!` : `เหลือเวลา ${hoursLeft.toFixed(1)} ชม.`}
+                        </p>
+                        <p><i class="fas fa-hashtag"></i> ID: ${slip.id}</p>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <button class="btn btn-success" onclick="approveReturnSlip('${slip.id}')">
+                            <i class="fas fa-check-circle"></i> ยืนยันคืนเงิน
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function approveSlip(borrowId) {
+            if (!confirm('ยืนยันการอนุมัติสลิปนี้?')) return;
+            
+            try {
+                const res = await fetch('/api/admin/approve-slip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, borrowId })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('อนุมัติสลิปสำเร็จ!');
+                    loadSlips();
+                } else {
+                    alert(data.message);
+                }
+            } catch (e) {
+                alert('เกิดข้อผิดพลาด');
+            }
+        }
+
+        async function rejectSlip(borrowId) {
+            if (!confirm('ยืนยันการปฏิเสธสลิปนี้?')) return;
+            alert('ฟีเจอร์นี้ยังไม่พร้อมใช้งาน');
+        }
+
+        // Register new user
+        async function registerUser() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const msgEl = document.getElementById('regMessage');
+            
+            if (!username || !password) {
+                msgEl.innerHTML = '<span style="color:#ff4757;">❌ กรุณากรอกข้อมูลให้ครบ</span>';
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/admin/register-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, username, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    msgEl.innerHTML = '<span style="color:#2ecc71;">✅ ' + data.message + '</span>';
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                } else {
+                    msgEl.innerHTML = '<span style="color:#ff4757;">❌ ' + data.message + '</span>';
+                }
+            } catch (e) {
+                msgEl.innerHTML = '<span style="color:#ff4757;">❌ เกิดข้อผิดพลาด</span>';
+            }
+        }
+
+        // Load all users
+        async function loadAllUsers() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername })
+                });
+                const data = await res.json();
+                
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (data.success && data.users.length > 0) {
+                    tbody.innerHTML = data.users.map(u => {
+                        const verifiedBadge = u.verified ? 
+                            '<span style="color:#2ecc71;">✅ ยืนยันแล้ว</span>' : 
+                            '<span style="color:#ffc107;">⏳ รอยืนยัน</span>';
+                        
+                        return `
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:12px 8px;">${u.username}</td>
+                                <td style="padding:12px 8px;text-align:center;color:var(--primary);font-weight:600;">${u.level}</td>
+                                <td style="padding:12px 8px;text-align:center;color:#ffc107;">${u.points}</td>
+                                <td style="padding:12px 8px;text-align:center;color:#2ecc71;">${u.maxDailyBorrow}฿</td>
+                                <td style="padding:12px 8px;text-align:center;font-size:0.85em;">${verifiedBadge}</td>
+                                <td style="padding:12px 8px;color:rgba(255,255,255,0.5);font-size:0.85em;">${new Date(u.createdAt).toLocaleString('th-TH')}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.3);">ไม่มีผู้ใช้</td></tr>';
+                }
+            } catch (e) {
+                console.error('Error loading users:', e);
+            }
+        }
+
+        // Load data on page load
+        loadRequests();
+        loadSlips();
+
+        // Load return slips gallery
+        async function loadReturnSlips() {
+            try {
+                const res = await fetch('/api/admin/return-slips', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername })
+                });
+                const data = await res.json();
+                
+                const grid = document.getElementById('returnSlipsGrid');
+                
+                if (data.success && data.slips.length > 0) {
+                    grid.innerHTML = data.slips.map(slip => {
+                        const uploadDate = new Date(slip.slipUploadDate);
+                        const dueDate = new Date(slip.dueDate);
+                        const now = new Date();
+                        const timeDiff = dueDate - now;
+                        
+                        const dateStr = uploadDate.toLocaleDateString('th-TH', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        });
+                        const timeStr = uploadDate.toLocaleTimeString('th-TH', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        
+                        // คำนวณดอกเบี้ยถ้าเกินเวลา
+                        let timeStatus = '';
+                        let interestInfo = '';
+                        if (timeDiff > 0) {
+                            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                            timeStatus = `⏳ เหลือเวลา ${hours} ชม. ${minutes} นาที`;
+                        } else {
+                            const overdue = Math.abs(timeDiff);
+                            const days = Math.floor(overdue / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((overdue % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((overdue % (1000 * 60 * 60)) / (1000 * 60));
+                            
+                            let overdueText = 'เกิน ';
+                            if (days > 0) overdueText += `${days} วัน `;
+                            overdueText += `${hours} ชม. ${minutes} นาที`;
+                            
+                            const daysOverdue = Math.max(1, Math.ceil(overdue / (1000 * 60 * 60 * 24)));
+                            const interest = slip.amount * 0.01 * daysOverdue;
+                            const total = slip.amount + interest;
+                            
+                            timeStatus = `<span style="color:#ff4757;">⚠️ ${overdueText}</span>`;
+                            interestInfo = `<div style="background:rgba(255,71,87,0.2);border:1px solid rgba(255,71,87,0.4);border-radius:6px;padding:8px;margin-top:6px;font-size:0.85em;">
+                                <div style="color:#ff6b9d;margin-bottom:4px;">ดอกเบี้ย: ${interest.toFixed(2)}฿ (${daysOverdue} วัน)</div>
+                                <div style="color:#ff4757;font-weight:700;">ยอดรวม: ${total.toFixed(2)}฿</div>
+                            </div>`;
+                        }
+                        
+                        const statusColor = slip.status === 'completed' ? '#2ecc71' : (slip.status === 'return_pending' ? '#ffc107' : '#ffc107');
+                        const statusText = slip.status === 'completed' ? 'อนุมัติแล้ว' : 'รอตรวจสอบ';
+                        const showApproveBtn = slip.status === 'return_pending';
+                        
+                        return `
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onclick="window.open('${slip.slipUrl}', '_blank')" onmouseover="this.style.borderColor='var(--primary)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.2)';this.style.transform='translateY(0)'">
+                                <div style="width:100%;height:180px;background:rgba(0,0,0,0.3);border-radius:8px;margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                                    <img src="${slip.slipUrl}" alt="สลิป" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                    <div style="display:none;flex-direction:column;align-items:center;color:rgba(255,255,255,0.5);">
+                                        <i class="fas fa-file-pdf" style="font-size:3em;margin-bottom:8px;"></i>
+                                        <span style="font-size:0.8em;">PDF</span>
+                                    </div>
+                                </div>
+                                <div style="font-size:0.9em;">
+                                    <div style="color:var(--primary);font-weight:600;margin-bottom:6px;">
+                                        <i class="fas fa-user"></i> ${slip.username}
+                                    </div>
+                                    <div style="color:#2ecc71;font-weight:600;margin-bottom:6px;">
+                                        <i class="fas fa-money-bill-wave"></i> ${slip.amount.toFixed(2)} บาท
+                                    </div>
+                                    <div style="color:rgba(255,255,255,0.7);font-size:0.85em;margin-bottom:6px;" data-due-date="${dueDate.toISOString()}" data-amount="${slip.amount}">
+                                        <i class="fas fa-stopwatch"></i> ${timeStatus}
+                                    </div>
+                                    ${interestInfo}
+                                    <div style="color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:4px;margin-top:6px;">
+                                        <i class="fas fa-calendar"></i> ${dateStr}
+                                    </div>
+                                    <div style="color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:8px;">
+                                        <i class="fas fa-clock"></i> ${timeStr}
+                                    </div>
+                                    <div style="padding:6px 10px;background:rgba(${statusColor === '#2ecc71' ? '46,204,113' : '255,193,7'},0.1);border-radius:6px;text-align:center;font-size:0.8em;color:${statusColor};margin-bottom:${showApproveBtn ? '8px' : '0'};">
+                                        ${showApproveBtn ? '⏳ รอตรวจสอบ' : '✅ อนุมัติแล้ว'}
+                                    </div>
+                                    ${showApproveBtn ? `
+                                        <button onclick="event.stopPropagation();approveReturnSlip('${slip.id}')" style="width:100%;padding:8px;background:linear-gradient(135deg,#2ecc71,#27ae60);border:none;border-radius:6px;color:#fff;font-size:0.85em;font-weight:600;cursor:pointer;transition:all 0.3s;margin-top:8px;">
+                                            <i class="fas fa-check-circle"></i> ยืนยันคืนเงิน
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.3);grid-column:1/-1;"><i class="fas fa-inbox" style="font-size:3em;margin-bottom:16px;display:block;"></i>ยังไม่มีสลิปคืนเงิน</div>';
+                }
+            } catch (e) {
+                console.error('Load return slips error:', e);
+            }
+        }
+
+        // Upload slip for borrow
+        function uploadSlipFor(borrowId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('slip', file);
+                formData.append('borrowId', borrowId);
+                formData.append('adminUsername', adminUsername);
+                
+                try {
+                    const res = await fetch('/api/admin/upload-slip', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        alert('แนบสลิปสำเร็จ!');
+                        loadRequests();
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (e) {
+                    alert('เกิดข้อผิดพลาดในการอัปโหลด');
+                }
+            };
+            input.click();
+        }
+
+        // Update countdown timer every second
+        setInterval(() => {
+            updateCountdowns();
+        }, 1000);
+
+        // Auto reload data every 15 seconds
+        setInterval(() => {
+            loadRequests();
+            loadSlips();
+        }, 15000);
+
+        function updateCountdowns() {
+            const items = document.querySelectorAll('.request-item');
+            items.forEach((item, index) => {
+                const timeElement = item.querySelector('[data-due-date]');
+                if (timeElement) {
+                    const dueDate = new Date(timeElement.getAttribute('data-due-date'));
+                    const now = new Date();
+                    const diff = dueDate - now;
+                    
+                    if (diff > 0) {
+                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        timeElement.innerHTML = `<strong style="color:#2ecc71;">⏳ เหลือเวลา ${hours} ชม. ${minutes} นาที ${seconds} วินาที</strong>`;
+                    } else {
+                        // เกินเวลา - แสดงแบบละเอียด
+                        const overdue = Math.abs(diff);
+                        const days = Math.floor(overdue / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((overdue % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((overdue % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((overdue % (1000 * 60)) / 1000);
+                        
+                        let overdueText = 'เกินกำหนดแล้ว ';
+                        if (days > 0) overdueText += `${days} วัน `;
+                        overdueText += `${hours} ชม. ${minutes} นาที ${seconds} วิ`;
+                        
+                        const daysOverdue = Math.max(1, Math.ceil(overdue / (1000 * 60 * 60 * 24)));
+                        const amountEl = item.querySelector('[data-amount]');
+                        const amount = amountEl ? parseFloat(amountEl.getAttribute('data-amount')) : 0;
+                        const interest = amount * 0.01 * daysOverdue;
+                        const total = amount + interest;
+                        
+                        timeElement.innerHTML = `<strong style="color:#ff4757;">⚠️ ${overdueText}</strong><br>` +
+                            `<span style="color:#ff6b9d;font-size:0.9em;">ดอกเบี้ย: ${interest.toFixed(2)}฿ (${daysOverdue} วัน) | ยอดรวม: ${total.toFixed(2)}฿</span>`;
+                    }
+                }
+            });
+        }
+        
+        // Approve return slip (confirm return)
+        async function approveReturnSlip(borrowId) {
+            if (!confirm('ยืนยันการคืนเงินนี้? ผู้ใช้จะได้รับแต้มหากคืนตรงเวลา')) return;
+            
+            try {
+                const res = await fetch('/api/admin/approve-return-slip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, borrowId })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadReturnSlips();
+                    loadRequests();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (e) {
+                console.error('Approve return slip error:', e);
+                alert('เกิดข้อผิดพลาด: ' + e.message);
+            }
+        }
+
+        // ===== PAYMENT CONFIG =====
+        async function loadPaymentConfig() {
+            try {
+                const res = await fetch('/api/payment/config');
+                const data = await res.json();
+                
+                if (data.success && data.config) {
+                    const { truemoney, bank } = data.config;
+                    
+                    document.getElementById('truemoneyNumber').value = truemoney.accountNumber || '';
+                    document.getElementById('truemoneyName').value = truemoney.accountName || '';
+                    if (truemoney.qrCodeUrl) {
+                        document.getElementById('truemoneyQRPreview').innerHTML = '<img src="' + truemoney.qrCodeUrl + '" style="max-width:200px;border-radius:8px;border:2px solid rgba(255,107,157,0.3);"><div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px;">QR Code ปัจจุบัน</div>';
+                    }
+                    
+                    document.getElementById('bankName').value = bank.bankName || '';
+                    document.getElementById('bankNumber').value = bank.accountNumber || '';
+                    document.getElementById('bankAccountName').value = bank.accountName || '';
+                    if (bank.qrCodeUrl) {
+                        document.getElementById('bankQRPreview').innerHTML = '<img src="' + bank.qrCodeUrl + '" style="max-width:200px;border-radius:8px;border:2px solid rgba(0,212,255,0.3);"><div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px;">QR Code ปัจจุบัน</div>';
+                    }
+                }
+            } catch (e) {
+                console.error('Load payment config error:', e);
+            }
+        }
+
+        async function updateTruemoneyConfig() {
+            const accountNumber = document.getElementById('truemoneyNumber').value.trim();
+            const accountName = document.getElementById('truemoneyName').value.trim();
+            const qrFile = document.getElementById('truemoneyQR').files[0];
+            
+            if (!accountNumber || accountNumber.length !== 10) {
+                alert('เลขบัญชีต้องมี 10 หลัก');
+                return;
+            }
+            
+            if (!accountName) {
+                alert('กรุณากรอกชื่อบัญชี');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/admin/payment/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminUsername,
+                        truemoney: { accountNumber, accountName }
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    if (qrFile) {
+                        const formData = new FormData();
+                        formData.append('qrImage', qrFile);
+                        formData.append('adminUsername', adminUsername);
+                        formData.append('paymentType', 'truemoney');
+                        
+                        const qrRes = await fetch('/api/admin/payment/upload-qr', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const qrData = await qrRes.json();
+                        
+                        if (qrData.success) {
+                            showPaymentMessage('บันทึก TrueMoney สำเร็จ! (รวม QR Code)', 'success');
+                        } else {
+                            showPaymentMessage('บันทึกข้อมูลสำเร็จ แต่อัพโหลด QR ล้มเหลว', 'warning');
+                        }
+                    } else {
+                        showPaymentMessage('บันทึก TrueMoney สำเร็จ!', 'success');
+                    }
+                    
+                    setTimeout(function() { loadPaymentConfig(); }, 500);
+                } else {
+                    showPaymentMessage(data.message, 'error');
+                }
+            } catch (e) {
+                console.error('Update truemoney error:', e);
+                showPaymentMessage('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            }
+        }
+
+        async function updateBankConfig() {
+            const bankName = document.getElementById('bankName').value.trim();
+            const accountNumber = document.getElementById('bankNumber').value.trim();
+            const accountName = document.getElementById('bankAccountName').value.trim();
+            const qrFile = document.getElementById('bankQR').files[0];
+            
+            if (!bankName) {
+                alert('กรุณากรอกชื่อธนาคาร');
+                return;
+            }
+            
+            if (!accountNumber || accountNumber.length !== 10) {
+                alert('เลขบัญชีต้องมี 10 หลัก');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/admin/payment/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminUsername,
+                        bank: { bankName, accountNumber, accountName }
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    if (qrFile) {
+                        const formData = new FormData();
+                        formData.append('qrImage', qrFile);
+                        formData.append('adminUsername', adminUsername);
+                        formData.append('paymentType', 'bank');
+                        
+                        const qrRes = await fetch('/api/admin/payment/upload-qr', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const qrData = await qrRes.json();
+                        
+                        if (qrData.success) {
+                            showPaymentMessage('บันทึกธนาคารสำเร็จ! (รวม QR Code)', 'success');
+                        } else {
+                            showPaymentMessage('บันทึกข้อมูลสำเร็จ แต่อัพโหลด QR ล้มเหลว', 'warning');
+                        }
+                    } else {
+                        showPaymentMessage('บันทึกธนาคารสำเร็จ!', 'success');
+                    }
+                    
+                    setTimeout(function() { loadPaymentConfig(); }, 500);
+                } else {
+                    showPaymentMessage(data.message, 'error');
+                }
+            } catch (e) {
+                console.error('Update bank error:', e);
+                showPaymentMessage('เกิดข้อผิดพลาด: ' + e.message, 'error');
+            }
+        }
+
+        function showPaymentMessage(message, type) {
+            const msgEl = document.getElementById('paymentMessage');
+            msgEl.style.display = 'block';
+            msgEl.textContent = message;
+            
+            if (type === 'success') {
+                msgEl.style.background = 'rgba(46,204,113,0.2)';
+                msgEl.style.border = '1px solid rgba(46,204,113,0.4)';
+                msgEl.style.color = '#2ecc71';
+            } else if (type === 'error') {
+                msgEl.style.background = 'rgba(255,71,87,0.2)';
+                msgEl.style.border = '1px solid rgba(255,71,87,0.4)';
+                msgEl.style.color = '#ff4757';
+            } else if (type === 'warning') {
+                msgEl.style.background = 'rgba(255,193,7,0.2)';
+                msgEl.style.border = '1px solid rgba(255,193,7,0.4)';
+                msgEl.style.color = '#ffc107';
+            }
+            
+            setTimeout(function() {
+                msgEl.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

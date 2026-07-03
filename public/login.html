@@ -44,7 +44,14 @@
             background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .logo .subtitle {
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 20px;
+            font-weight: 400;
         }
 
         .auth-box {
@@ -201,13 +208,14 @@
 
     <div class="container">
         <div class="logo">
-            <h1>นาย ชาเย็น</h1>
+            <h1>MONEY</h1>
+            <div class="subtitle">ระบบยืมเงินออนไลน์ สะดวก รวดเร็ว ปลอดภัย</div>
         </div>
 
         <div class="auth-box">
             <div class="tabs">
                 <div class="tab active" onclick="showTab('login')">เข้าสู่ระบบ</div>
-                <div class="tab" onclick="showTab('register')">สมัครสมาชิก</div>
+                <!-- สมัครสมาชิกปิดไว้ สมัครผ่านแอดมินเท่านั้น -->
             </div>
 
             <!-- Login Form -->
@@ -231,29 +239,12 @@
                 <div class="error-msg" id="loginError"></div>
             </div>
 
-            <!-- Register Form -->
-            <div class="form-container" id="registerForm">
-                <div class="form-group">
-                    <label>ชื่อผู้ใช้</label>
-                    <input type="text" id="regUsername" placeholder="กรุณากรอกชื่อผู้ใช้">
-                </div>
-                <div class="form-group">
-                    <label>รหัสผ่าน</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="regPassword" placeholder="กรุณากรอกรหัสผ่าน">
-                        <span class="toggle-password" onclick="togglePassword('regPassword', this)">👁</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>ยืนยันรหัสผ่าน</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="regConfirmPassword" placeholder="กรุณากรอกรหัสผ่านอีกครั้ง">
-                        <span class="toggle-password" onclick="togglePassword('regConfirmPassword', this)">👁</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="register()">สมัครสมาชิก</button>
-                <div class="success-msg" id="regSuccess"></div>
-                <div class="error-msg" id="regError"></div>
+            <!-- Register Form ปิดการใช้งาน -->
+            <div class="form-container" id="registerForm" style="display:none;">
+                <p style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;">
+                    ระบบสมัครสมาชิกปิดชั่วคราว<br>
+                    กรุณาติดต่อแอดมินเพื่อสมัคร
+                </p>
             </div>
         </div>
     </div>
@@ -327,7 +318,13 @@
                 if (data.success) {
                     sessionStorage.setItem('username', data.user.username);
                     sessionStorage.setItem('role', data.user.role);
-                    window.location.href = '/dashboard.html';
+                    
+                    // Redirect based on role
+                    if (data.user.role === 'admin' || data.user.role === 'dev') {
+                        window.location.href = '/admin.html';
+                    } else {
+                        window.location.href = '/dashboard.html';
+                    }
                 } else {
                     errorEl.textContent = data.message;
                     errorEl.style.display = 'block';
@@ -340,13 +337,30 @@
 
         async function register() {
             const username = document.getElementById('regUsername').value;
+            const phone = document.getElementById('regPhone').value;
+            const wallet = document.getElementById('regWallet').value;
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             const errorEl = document.getElementById('regError');
             const successEl = document.getElementById('regSuccess');
             
-            if (!username || !password || !confirmPassword) {
-                errorEl.textContent = 'กรุณากรอกข้อมูลให้ครบ';
+            if (!username || !phone || !wallet || !password || !confirmPassword) {
+                errorEl.textContent = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+                return;
+            }
+
+            // Validate phone number
+            if (!/^0\d{9}$/.test(phone)) {
+                errorEl.textContent = 'เบอร์โทรไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมี 10 หลัก)';
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+                return;
+            }
+
+            if (!/^0\d{9}$/.test(wallet)) {
+                errorEl.textContent = 'เบอร์วอเลทไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมี 10 หลัก)';
                 errorEl.style.display = 'block';
                 successEl.style.display = 'none';
                 return;
@@ -363,7 +377,7 @@
                 const res = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password, phone, wallet })
                 });
                 const data = await res.json();
                 
@@ -371,7 +385,7 @@
                     errorEl.style.display = 'none';
                     successEl.textContent = data.message;
                     successEl.style.display = 'block';
-                    setTimeout(() => showTab('login'), 1500);
+                    setTimeout(() => showTab('login'), 2000);
                 } else {
                     errorEl.textContent = data.message;
                     errorEl.style.display = 'block';

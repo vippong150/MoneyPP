@@ -1,0 +1,123 @@
+{
+  "notifications": [
+    {
+      "id": "notif1783023456237",
+      "username": "2@2.2",
+      "type": "return_approved",
+      "title": "🎉 คืนเงินสำเร็จ! (ตรงเวลา)",
+      "message": "คืนเงิน 20.00 บาท สำเร็จ! คุณได้รับ +1 แต้ม 🎉",
+      "amount": 20,
+      "borrowId": "borrow1783022689869",
+      "pointsAwarded": 1,
+      "date": "2026-07-02T20:17:36.236Z",
+      "read": false
+    },
+    {
+      "id": "notif1783023624471",
+      "username": "2@2.2",
+      "type": "return_approved",
+      "title": "🎉 คืนเงินสำเร็จ! (ตรงเวลา)",
+      "message": "คืนเงิน 80.00 บาท สำเร็จ! คุณได้รับ +1 แต้ม 🎉",
+      "amount": 80,
+      "borrowId": "borrow1783022435194",
+      "pointsAwarded": 1,
+      "date": "2026-07-02T20:20:24.470Z",
+      "read": false
+    },
+    {
+      "id": "notif1783025696200",
+      "username": "2@2.2",
+      "type": "approved",
+      "title": "✅ ได้รับเงินแล้ว!",
+      "message": "คำขอยืม 100.00 บาท ได้รับการอนุมัติแล้ว",
+      "amount": 100,
+      "borrowId": "borrow1783025649591",
+      "date": "2026-07-02T20:54:56.199Z",
+      "read": true
+    },
+    {
+      "id": "notif1783026267647",
+      "username": "2@2.2",
+      "type": "return_approved",
+      "title": "🎉 คืนเงินสำเร็จ! (ตรงเวลา)",
+      "message": "คืนเงิน 100.00 บาท สำเร็จ! คุณได้รับ +1 แต้ม 🎉",
+      "amount": 100,
+      "borrowId": "borrow1783025649591",
+      "pointsAwarded": 1,
+      "date": "2026-07-02T21:04:27.646Z",
+      "read": false
+    },
+    {
+      "id": "notif1783026340509",
+      "username": "2@2.2",
+      "type": "approved",
+      "title": "✅ ได้รับเงินแล้ว!",
+      "message": "คำขอยืม 100.00 บาท ได้รับการอนุมัติแล้ว",
+      "amount": 100,
+      "borrowId": "borrow1783026316756",
+      "date": "2026-07-02T21:05:40.509Z",
+      "read": false
+    },
+    {
+      "id": "notif1783028420696",
+      "username": "2@2.2",
+      "type": "return_approved",
+      "title": "✅ คืนเงินสำเร็จ! (คืนช้า)",
+      "message": "คืนเงิน 100.00 บาท สำเร็จ! (คืนช้า ไม่ได้แต้ม)",
+      "amount": 100,
+      "borrowId": "borrow1783026316756",
+      "pointsAwarded": 0,
+      "date": "2026-07-02T21:40:20.695Z",
+      "read": false
+    },
+    {
+      "id": "notif1783029461619",
+      "username": "2@2.2",
+      "type": "approved",
+      "title": "✅ ได้รับเงินแล้ว!",
+      "message": "คำขอยืม 100.00 บาท ได้รับการอนุมัติแล้ว",
+      "amount": 100,
+      "borrowId": "borrow1783029436260",
+      "date": "2026-07-02T21:57:41.617Z",
+      "read": false
+    },
+    {
+      "id": "notif1783029940559",
+      "username": "2@2.2",
+      "type": "return_approved",
+      "title": "✅ คืนเงินสำเร็จ! (คืนช้า)",
+      "message": "คืนเงิน 100.00 บาท สำเร็จ! (คืนช้า ไม่ได้แต้ม)",
+      "amount": 100,
+      "borrowId": "borrow1783029436260",
+      "pointsAwarded": 0,
+      "date": "2026-07-02T22:05:40.544Z",
+      "read": false
+    },
+    {
+      "id": "notif1783030906993",
+      "username": "2@2.2",
+      "type": "balance_added",
+      "title": "💰 ได้รับเงินเข้ากระเป๋า",
+      "message": "+10.20 บาท (Bouหหหห)\nยอดคงเหลือ: 10.20 บาท",
+      "amount": 10.2,
+      "reason": "Bouหหหห",
+      "oldBalance": 0,
+      "newBalance": 10.2,
+      "date": "2026-07-02T22:21:46.993Z",
+      "read": false
+    },
+    {
+      "id": "notif1783030972385",
+      "username": "2@2.2",
+      "type": "balance_deducted",
+      "title": "💸 เงินถูกหักออกจากกระเป๋า",
+      "message": "-10.30 บาท (ปรับ)\nยอดคงเหลือ: -0.10 บาท",
+      "amount": -10.3,
+      "reason": "ปรับ",
+      "oldBalance": 10.2,
+      "newBalance": -0.1,
+      "date": "2026-07-02T22:22:52.386Z",
+      "read": false
+    }
+  ]
+}

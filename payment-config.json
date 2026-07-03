@@ -1,0 +1,13 @@
+{
+  "truemoney": {
+    "accountNumber": "0997024844",
+    "accountName": "ภูริทัต มาอยู่",
+    "qrCodeUrl": "/uploads/slip_1783031315831_w1z2c4z0k.png"
+  },
+  "bank": {
+    "accountNumber": "2934763042",
+    "accountName": "ทิพวรรณ มาอยู่",
+    "bankName": "ธนาคารกรุงเทพ",
+    "qrCodeUrl": "/uploads/slip_1783025572577_hasefldho.png"
+  }
+}

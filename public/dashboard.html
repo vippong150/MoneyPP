@@ -691,6 +691,11 @@
         .highlight {
             color: var(--primary);
         }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -720,6 +725,22 @@
             <button class="menu-item" onclick="showSection('history')">
                 <i class="fas fa-history"></i> ประวัติ
             </button>
+            <button class="menu-item" onclick="showSection('return-history')">
+                <i class="fas fa-check-circle"></i> ประวัติคืนเงิน
+            </button>
+            <button class="menu-item" onclick="showSection('notifications')">
+                <i class="fas fa-bell"></i> การแจ้งเตือน
+                <span class="badge" id="notifBadge" style="display:none;">0</span>
+            </button>
+            <button class="menu-item" onclick="showSection('slips')">
+                <i class="fas fa-receipt"></i> สลิปการเงิน
+            </button>
+            <button class="menu-item" onclick="showSection('level')">
+                <i class="fas fa-chart-line"></i> เลเวล
+            </button>
+            <button class="menu-item" onclick="showSection('verify')">
+                <i class="fas fa-id-card"></i> ยืนยันตัวตน
+            </button>
             <button class="menu-item" onclick="showSection('update')">
                 <i class="fas fa-sync-alt"></i> อัพเดตระบบ
             </button>
@@ -747,9 +768,17 @@
                 <h1>หน้าแรก <span>Dashboard</span></h1>
             </div>
             <div class="topbar-right">
+                <div class="points-display" style="background:linear-gradient(135deg,rgba(255,193,7,0.15),rgba(255,152,0,0.15));border-color:rgba(255,193,7,0.3);">
+                    <i class="fas fa-star"></i>
+                    <span>เลเวล <strong id="userLevel">1</strong></span>
+                </div>
+                <div class="points-display" style="background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,170,255,0.15));border-color:rgba(0,212,255,0.3);">
+                    <i class="fas fa-wallet"></i>
+                    <span id="userBalance" style="font-weight:700;color:var(--primary);">0.00</span> บาท
+                </div>
                 <div class="points-display">
                     <i class="fas fa-coins"></i>
-                    <span id="userPoints">0</span> แต้ม
+                    <span id="userPoints">50</span> แต้ม
                 </div>
                 <div class="date-display" id="dateDisplay"></div>
             </div>
@@ -759,24 +788,92 @@
         <div class="section active" id="section-home">
             <div class="stats-grid">
                 <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-star"></i></div>
+                    <div class="stat-value" id="statLevel">1</div>
+                    <div class="stat-label">เลเวล</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
-                    <div class="stat-value" id="statPoints">0</div>
-                    <div class="stat-label">แต้มคงเหลือ</div>
+                    <div class="stat-value" id="statBalance" style="color:var(--primary);">0.00฿</div>
+                    <div class="stat-label">กระเป๋าเงิน</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon purple"><i class="fas fa-hand-holding-usd"></i></div>
-                    <div class="stat-value" id="statBorrowed">0</div>
-                    <div class="stat-label">ยืมทั้งหมด</div>
+                    <div class="stat-icon purple"><i class="fas fa-coins"></i></div>
+                    <div class="stat-value" id="statPoints">50</div>
+                    <div class="stat-label">แต้ม</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon pink"><i class="fas fa-credit-card"></i></div>
-                    <div class="stat-value" id="statPending">0</div>
-                    <div class="stat-label">รออนุมัติ</div>
+                    <div class="stat-icon pink"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="stat-value" id="statMaxBorrow">100฿</div>
+                    <div class="stat-label">ยืมได้สูงสุด</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-value" id="statApproved">0</div>
-                    <div class="stat-label">อนุมัติแล้ว</div>
+                    <div class="stat-value" id="statCompleted">0</div>
+                    <div class="stat-label">คืนตรงเวลา</div>
+                </div>
+            </div>
+            
+            <!-- Borrow Summary Card -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title"><i class="fas fa-chart-line"></i> สรุปการยืม</div>
+                
+                <!-- รายการยืมเงินรออนุมัติ -->
+                <div id="pendingBorrowsSection" style="margin-bottom:16px;">
+                    <!-- Generated by JS -->
+                </div>
+                
+                <!-- รายการที่รออนุมัติ/กำลังยืม -->
+                <div id="activeBorrowsSection" style="margin-bottom:16px;">
+                    <!-- Generated by JS -->
+                </div>
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                    <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:14px;">
+                        <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                            <i class="fas fa-wallet"></i> ยอดยืมคงค้าง
+                        </div>
+                        <div style="font-size:1.6em;font-weight:700;color:var(--primary);" id="activeTotal">0฿</div>
+                        <div style="font-size:0.75em;color:rgba(255,255,255,0.4);margin-top:4px;" id="remainingLimitContainer">
+                            ยืมได้อีก <strong id="remainingLimit" style="color:#2ecc71;">100฿</strong>
+                        </div>
+                        <div style="font-size:0.75em;color:#ff4757;margin-top:4px;display:none;" id="overlimitWarning">
+                            <i class="fas fa-exclamation-triangle"></i> โปรดจ่ายยอดให้ครบก่อนถึงจะยืมได้ใหม่
+                        </div>
+                    </div>
+                    
+                    <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:10px;padding:14px;">
+                        <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                            <i class="fas fa-smile"></i> คืนตรงเวลา
+                        </div>
+                        <div style="font-size:1.6em;font-weight:700;color:#2ecc71;" id="onTimeCount">0</div>
+                        <div style="font-size:0.75em;color:rgba(255,255,255,0.4);margin-top:4px;">
+                            ได้โบนัส +<span id="bonusPoints">0</span> แต้ม 🎉
+                        </div>
+                    </div>
+                    
+                    <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:10px;padding:14px;">
+                        <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                            <i class="fas fa-frown"></i> คืนช้า
+                        </div>
+                        <div style="font-size:1.6em;font-weight:700;color:#ff4757;" id="lateCount">0</div>
+                        <div style="font-size:0.75em;color:rgba(255,255,255,0.4);margin-top:4px;">
+                            หักไป -<span id="deductedPoints">0</span> แต้ม
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Negative Balance Warning -->
+            <div id="negativeBalanceWarning" style="display:none;background:linear-gradient(135deg,rgba(255,71,87,0.15),rgba(255,107,157,0.15));border:2px solid rgba(255,71,87,0.3);border-radius:12px;padding:16px;margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:1.5em;color:#ff4757;"></i>
+                    <div style="font-size:1.1em;font-weight:700;color:#ff4757;">กระเป๋าเงินติดลบ!</div>
+                </div>
+                <div style="color:rgba(255,255,255,0.8);line-height:1.6;font-size:0.95em;">
+                    ยอดเงินในกระเป๋าของคุณ: <strong id="warningBalance" style="color:#ff4757;">-0.10฿</strong><br>
+                    ลิมิตที่ยืมได้จะถูกหักตามยอดติดลบ<br>
+                    <span style="font-size:0.9em;color:rgba(255,255,255,0.6);">ตัวอย่าง: ยืมได้ 100฿ - ติดลบ 0.10฿ = ยืมได้จริง <strong style="color:#ffc107;">99.90฿</strong></span>
                 </div>
             </div>
 
@@ -784,8 +881,10 @@
                 <div class="card-title"><i class="fas fa-bolt"></i> ยินดีต้อนรับ</div>
                 <p style="color:rgba(255,255,255,0.6);line-height:1.8;">
                     สวัสดีคุณ <strong id="welcomeUser" style="color:var(--primary);">ผู้ใช้</strong>!
-                    ยินดีต้อนรับสู่ระบบยืมเงินอัจฉริยะ นาย ชาเย็น
-                    คุณสามารถยืมเงินได้ง่าย ๆ เพียงไม่กี่คลิก
+                    ยินดีต้อนรับสู่ระบบยืมเงินอัจฉริยะ นาย ชาเย็น<br>
+                    <span style="font-size:0.9em;">คุณอยู่ <strong style="color:#ffc107;">เลเวล <span id="levelDisplay">1</span></strong> 
+                    มีแต้ม <strong style="color:var(--primary);"><span id="pointsDisplay">50</span> แต้ม</strong>
+                    ยืมได้สูงสุด <strong style="color:#2ecc71;"><span id="limitDisplay">100</span> บาท</strong></span>
                 </p>
                 <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
                     <button class="btn btn-primary" onclick="showSection('borrow')">
@@ -794,6 +893,28 @@
                     <button class="btn btn-outline" onclick="showSection('history')">
                         <i class="fas fa-history"></i> ดูประวัติ
                     </button>
+                </div>
+            </div>
+            
+            <!-- วิธีคืนเงิน -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-money-check-alt" style="color:#2ecc71;"></i> วิธีคืนเงิน
+                </div>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.9em;margin-bottom:20px;">
+                    โอนเงินมาที่บัญชีด้านล่าง แล้วแนบสลิปในหน้า "ประวัติ" → กดปุ่ม "แนบสลิปคืนเงิน"
+                </p>
+                
+                <div id="paymentMethodsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+            
+            <!-- ประวัติคืนเงินล่าสุด -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-check-circle" style="color:#2ecc71;"></i> ประวัติคืนเงินล่าสุด</div>
+                <div id="recentReturnHistory">
+                    <!-- Generated by JS -->
                 </div>
             </div>
         </div>
@@ -814,29 +935,83 @@
 
             <div class="card">
                 <div class="card-title"><i class="fas fa-file-invoice"></i> รายละเอียดการยืม</div>
-                <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.85em;color:var(--primary);">
+                <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.9em;color:var(--primary);">
                     <i class="fas fa-info-circle"></i> 
-                    <strong>1 วันคืน</strong> — คืนเท่าเดิม ไม่มีดอกเบี้ย | 
-                    <strong>เกิน 1 วัน</strong> — คิดดอกเบี้ย <strong>10%</strong>
+                    <strong>อัตราดอกเบี้ย: 10 บาท ต่อ 0.10 บาท (1% ต่อวัน)</strong><br>
+                    <span style="font-size:0.85em;color:rgba(255,255,255,0.7);margin-top:4px;display:inline-block;">
+                    • คืนภายใน 24 ชม. = ไม่มีดอก | เกิน 24 ชม. = คิดดอก 1%/วัน + หักแต้ม 1/วัน
+                    </span>
                 </div>
+                
                 <div class="borrow-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>จำนวนเงิน (บาท)</label>
-                            <input type="number" id="borrowAmount" placeholder="เช่น 100" oninput="calcBorrowSummary()">
-                        </div>
-                        <div class="form-group">
-                            <label>ระยะเวลา (วัน)</label>
-                            <input type="number" id="borrowDays" placeholder="เช่น 1" value="1" oninput="calcBorrowSummary()">
-                        </div>
-                    </div>
                     <div class="form-group">
-                        <label>ยอดที่ต้องชำระ</label>
-                        <input type="text" id="borrowTotal" readonly value="0 บาท">
+                        <label><i class="fas fa-money-bill-wave"></i> จำนวนเงินที่ต้องการยืม (บาท)</label>
+                        <input type="number" id="borrowAmount" placeholder="เช่น 100" min="1" max="100" oninput="updateCalcTable();validateBorrowAmount(this)">
+                        <div id="amountWarning" style="display:none;margin-top:6px;font-size:0.8em;color:#ff6b9d;">
+                            <i class="fas fa-exclamation-triangle"></i> <span id="amountWarningText"></span>
+                        </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-wallet"></i> เบอร์วอเลท</label>
+                        <input type="text" id="walletNumber" placeholder="เช่น 0812345678" maxlength="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> ชื่อบัญชี</label>
+                        <input type="text" id="accountName" placeholder="ชื่อ">
+                    </div>
+                    
+                    <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.85em;">
+                        <strong style="color:var(--primary);"><i class="fas fa-clock"></i> ระยะเวลาการยืม:</strong><br>
+                        <span style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                        • ยืมได้ <strong style="color:#2ecc71;">1 วัน (24 ชั่วโมง)</strong> เท่านั้น<br>
+                        • นับเวลาถอยหลัง<strong style="color:#ffc107;"> เริ่มนับเมื่อแอดมินอนุมัติ</strong><br>
+                        • คืนภายใน 24 ชม. = <strong style="color:#2ecc71;">ไม่มีดอกเบี้ย + ได้ 1 แต้ม 🎉</strong><br>
+                        • คืนช้ากว่า 24 ชม. = <strong style="color:#ff6b9d;">คิดดอก 1%/วัน + หักแต้ม 1/วัน (ไม่ได้แต้มโบนัส)</strong><br>
+                        • เช่น: คืนช้า 5 วัน = <strong style="color:#ff4757;">ดอก 4% + หักแต้ม 4 แต้ม</strong><br>
+                        • คืนช้า 31 วัน = <strong style="color:#ff4757;">ดอก 30% + หักแต้ม 30 แต้ม</strong>
+                        </span>
+                    </div>
+                    
+                    <!-- เครื่องคำนวณตัวอย่าง -->
+                    <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:16px;margin-bottom:16px;">
+                        <div style="font-size:0.95em;color:#ffc107;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                            <i class="fas fa-calculator"></i> <strong>🧮 เครื่องคำนวณตัวอย่าง (1-31 วัน)</strong>
+                        </div>
+                        <div style="font-size:0.8em;color:rgba(255,255,255,0.7);margin-bottom:12px;">
+                            ดูตารางเต็มว่าถ้าคืนช้า <strong style="color:#ffc107;">จะต้องจ่ายเท่าไหร่ + แต้มถูกหักกี่แต้ม</strong>
+                        </div>
+                        <button type="button" onclick="toggleCalcTable()" id="calcToggleBtn" style="width:100%;padding:10px 16px;border:1px solid rgba(0,212,255,0.3);background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(168,85,247,0.15));color:var(--primary);border-radius:10px;font-size:0.9em;cursor:pointer;transition:all 0.3s;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <i class="fas fa-table"></i> <span id="calcToggleTxt">แสดงตารางคำนวณ 1-31 วัน</span> <i class="fas fa-chevron-down" id="calcToggleIcon"></i>
+                        </button>
+                        
+                        <div id="calcTableContainer" style="display:none;margin-top:12px;animation:slideDown 0.3s ease;">
+                            <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:12px;overflow-x:auto;max-height:500px;overflow-y:auto;">
+                                <div style="font-size:0.85em;color:rgba(255,255,255,0.6);margin-bottom:8px;text-align:center;">
+                                    จำนวนเงินที่ยืม: <strong id="tableAmount" style="color:#fff;font-size:1.1em;">100 บาท</strong>
+                                </div>
+                                <table style="width:100%;font-size:0.75em;text-align:center;">
+                                    <thead style="position:sticky;top:0;background:rgba(10,10,26,0.95);z-index:1;">
+                                        <tr style="border-bottom:2px solid rgba(0,212,255,0.3);">
+                                            <th style="padding:10px 6px;color:var(--primary);">วัน</th>
+                                            <th style="padding:10px 6px;color:var(--primary);">ดอกเบี้ย</th>
+                                            <th style="padding:10px 6px;color:var(--primary);">ยอดชำระ</th>
+                                            <th style="padding:10px 6px;color:#ffc107;">แต้มถูกหัก</th>
+                                            <th style="padding:10px 6px;color:var(--primary);">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="calcTableBody" style="font-size:1em;">
+                                        <!-- Generated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="submitBorrow()">
-                            <i class="fas fa-paper-plane"></i> ส่งคำขอยืม
+                        <button class="btn btn-primary" onclick="submitBorrow()" style="flex:1;">
+                            <i class="fas fa-paper-plane"></i> ส่งคำขอยืม 1 วัน (24 ชั่วโมง)
                         </button>
                         <button class="btn btn-outline" onclick="resetBorrowForm()">
                             <i class="fas fa-undo"></i> รีเซ็ต
@@ -873,6 +1048,52 @@
             </div>
         </div>
 
+        <!-- Section: Return History -->
+        <div class="section" id="section-return-history">
+            <div class="section-header">
+                <h2><i class="fas fa-check-circle" style="color:#2ecc71;"></i> ประวัติคืนเงิน</h2>
+                <p>ประวัติการคืนเงินที่สำเร็จแล้วทั้งหมด</p>
+            </div>
+            <div class="card">
+                <div id="returnHistoryGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Notifications -->
+        <div class="section" id="section-notifications">
+            <div class="section-header">
+                <h2><i class="fas fa-bell" style="color:var(--primary);"></i> การแจ้งเตือน</h2>
+                <p>การแจ้งเตือนทั้งหมดของคุณ</p>
+            </div>
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <div class="card-title" style="margin-bottom:0;"><i class="fas fa-inbox"></i> ทั้งหมด</div>
+                    <button onclick="markAllAsRead()" style="padding:8px 16px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:8px;color:var(--primary);font-size:0.85em;cursor:pointer;">
+                        <i class="fas fa-check-double"></i> ทำเครื่องหมายอ่านทั้งหมด
+                    </button>
+                </div>
+                <div id="notificationsGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Slips -->
+        <div class="section" id="section-slips">
+            <div class="section-header">
+                <h2><i class="fas fa-receipt" style="color:var(--primary);"></i> สลิปการเงิน</h2>
+                <p>ดูสลิปโอนเงินที่แอดมินส่งให้คุณ</p>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-images"></i> คลังสลิป</div>
+                <div id="slipsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+
         <!-- Section: Update -->
         <div class="section" id="section-update">
             <div class="section-header">
@@ -902,6 +1123,77 @@
                 </button>
             </div>
         </div>
+
+        <!-- Section: Level -->
+        <div class="section" id="section-level">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line" style="color:var(--primary);"></i> ระบบเลเวล</h2>
+                <p>รายละเอียดเลเวลทั้งหมด 1-20 และสิทธิประโยชน์ของแต่ละเลเวล</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-star"></i> ตารางเลเวล (Level 1-20)</div>
+                <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:16px;margin-bottom:16px;font-size:0.9em;line-height:1.8;">
+                    <strong style="color:var(--primary);">📊 สรุประบบเลเวล:</strong><br>
+                    • เริ่มต้น: <strong style="color:#ffc107;">50 แต้ม (เลเวล 1)</strong><br>
+                    • ทุกๆ <strong style="color:var(--primary);">50 แต้ม</strong> จะขึ้น 1 เลเวล<br>
+                    • คืนตรงเวลา (24 ชม.) = <strong style="color:#2ecc71;">+1 แต้ม</strong><br>
+                    • คืนช้า (เกิน 24 ชม.) = <strong style="color:#ff4757;">-1 แต้ม/วัน</strong><br>
+                    • ยอดยืมเพิ่ม: <strong style="color:#2ecc71;">เลเวล × 50 + 50 บาท</strong><br>
+                    <span style="font-size:0.85em;color:rgba(255,255,255,0.5);">เช่น: เลเวล 1 = 100฿, เลเวล 2 = 150฿, เลเวล 20 = 1050฿</span>
+                </div>
+
+                <div style="overflow-x:auto;max-height:600px;overflow-y:auto;">
+                    <table style="width:100%;font-size:0.9em;text-align:center;">
+                        <thead style="position:sticky;top:0;background:rgba(10,10,26,0.95);z-index:1;">
+                            <tr style="border-bottom:2px solid rgba(0,212,255,0.3);">
+                                <th style="padding:12px 8px;color:var(--primary);">เลเวล</th>
+                                <th style="padding:12px 8px;color:var(--primary);">แต้มขั้นต่ำ</th>
+                                <th style="padding:12px 8px;color:var(--primary);">ยืมได้สูงสุด</th>
+                                <th style="padding:12px 8px;color:var(--primary);">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="levelTableBody">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Verify Identity -->
+        <div class="section" id="section-verify">
+            <div class="section-header">
+                <h2><i class="fas fa-id-card" style="color:var(--primary);"></i> ยืนยันตัวตน</h2>
+                <p>กรุณากรอกข้อมูลเพื่อยืนยันตัวตนก่อนยืมเงิน</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-user-check"></i> ฟอร์มยืนยันตัวตน</div>
+                <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:0.9em;">
+                    <i class="fas fa-info-circle"></i> <strong style="color:#ffc107;">คุณต้องยืนยันตัวตนก่อนยืมเงิน</strong><br>
+                    <span style="font-size:0.85em;color:rgba(255,255,255,0.6);">
+                        กรอกชื่อจริงและเบอร์วอเลทของคุณเพื่อรับเงินเมื่อแอดมินอนุมัติ
+                    </span>
+                </div>
+
+                <div id="verifyStatus" style="margin-bottom:20px;"></div>
+
+                <div style="max-width:400px;" id="verifyForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> ชื่อ-สกุล</label>
+                        <input type="text" id="verifyFullName" placeholder="ชื่อ สกุล">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-wallet"></i> เบอร์วอเลท (10 หลัก)</label>
+                        <input type="text" id="verifyWallet" placeholder="เช่น 0812345678" maxlength="10">
+                    </div>
+                    <button class="btn btn-primary" onclick="submitVerify()">
+                        <i class="fas fa-check-circle"></i> ยืนยันตัวตน
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Confirm Modal -->
@@ -928,7 +1220,7 @@
                 { amount: 300, label: '300 บาท' }
             ],
             DEFAULT_INTEREST: 0,
-            OVERDUE_INTEREST: 10,
+            OVERDUE_INTEREST_RATE: 0.01, // 1% per day (10 บาท ต่อ 0.10 บาท)
             DEFAULT_DAYS: 1
         };
 
@@ -1032,7 +1324,12 @@
                 document.getElementById('sidebarOverlay').classList.remove('show');
             }
             if (name === 'history') loadHistory();
+            if (name === 'return-history') loadReturnHistory();
+            if (name === 'notifications') loadNotifications();
             if (name === 'update') loadUpdates();
+            if (name === 'level') loadLevelTable();
+            if (name === 'verify') checkVerifyStatus();
+            if (name === 'slips') loadAdminSlips();
         }
 
         // ===== LOAD USER =====
@@ -1049,11 +1346,371 @@
                 const data = await res.json();
                 if (data.success) {
                     userData = data.user;
+                    window.currentUser = data.user; // Cache for validation
                     updateUI(data.user);
+                    loadActiveBorrows();
                 }
             } catch (e) {
                 showToast('ไม่สามารถโหลดข้อมูลผู้ใช้', 'error');
             }
+        }
+
+        // ===== LOAD ACTIVE BORROWS =====
+        async function loadActiveBorrows() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+            
+            try {
+                const res = await fetch('/api/borrow/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Load pending borrows
+                    const pending = data.history.filter(b => b.status === 'pending');
+                    const pendingSection = document.getElementById('pendingBorrowsSection');
+                    
+                    if (pending.length > 0) {
+                        pendingSection.innerHTML = `
+                            <div style="background:linear-gradient(135deg,rgba(255,193,7,0.15),rgba(255,152,0,0.15));border:2px solid #ffc107;border-radius:12px;padding:16px;margin-bottom:12px;">
+                                <div style="font-size:1.1em;font-weight:600;color:#ffc107;margin-bottom:12px;">
+                                    <i class="fas fa-hourglass-half"></i> รายการยืมเงินรออนุมัติ (${pending.length})
+                                </div>
+                                ${pending.map(borrow => {
+                                    const borrowDate = new Date(borrow.date);
+                                    const dateStr = borrowDate.toLocaleDateString('th-TH', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    });
+                                    const timeStr = borrowDate.toLocaleTimeString('th-TH', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    });
+                                    
+                                    return `
+                                        <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px;margin-bottom:8px;">
+                                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                                <div>
+                                                    <div style="font-size:1.2em;font-weight:700;color:#ffc107;margin-bottom:4px;">
+                                                        <i class="fas fa-money-bill-wave"></i> ${borrow.amount.toFixed(2)} บาท
+                                                    </div>
+                                                    <div style="font-size:0.85em;color:rgba(255,255,255,0.6);">
+                                                        <i class="fas fa-calendar"></i> ส่งคำขอเมื่อ: ${dateStr}
+                                                    </div>
+                                                    <div style="font-size:0.85em;color:rgba(255,255,255,0.6);">
+                                                        <i class="fas fa-clock"></i> เวลา: ${timeStr}
+                                                    </div>
+                                                </div>
+                                                <div style="text-align:right;">
+                                                    <div style="padding:8px 16px;background:rgba(255,193,7,0.2);border:1px solid #ffc107;border-radius:8px;font-size:0.9em;color:#ffc107;font-weight:600;">
+                                                        ⏳ รออนุมัติ
+                                                    </div>
+                                                    <div style="font-size:0.75em;color:rgba(255,255,255,0.4);margin-top:4px;">
+                                                        ID: ${borrow.id}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                    } else {
+                        pendingSection.innerHTML = '';
+                    }
+                    
+                    // Load approved/return_pending borrows
+                    const active = data.history.filter(b => b.status === 'approved' || b.status === 'return_pending');
+                    
+                    // Store in global variable for updateCountdowns
+                    window.activeBorrowsData = active;
+                    
+                    const section = document.getElementById('activeBorrowsSection');
+                    
+                    if (active.length > 0) {
+                        section.innerHTML = active.map(borrow => {
+                            const approvedDate = new Date(borrow.approvedDate);
+                            const dueDate = new Date(borrow.dueDate);
+                            const now = new Date();
+                            const timeDiff = dueDate - now;
+                            const timeLeft = Math.max(0, timeDiff);
+                            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                            const isOverdue = timeDiff <= 0;
+                            
+                            // คำนวณดอกเบี้ยถ้าเกินเวลา (คิดดอกต่อแม้ส่งสลิปแล้ว จนกว่าแอดมินจะอนุมัติ)
+                            let totalWithInterest = borrow.amount;
+                            let daysOverdue = 0;
+                            let overdueInterest = 0;
+                            if (isOverdue) {
+                                const overdue = Math.abs(timeDiff);
+                                // นับเป็นวัน (ปัดขึ้น - เกินเวลาแม้แค่ 1 นาทีก็นับเป็น 1 วัน)
+                                daysOverdue = Math.max(1, Math.ceil(overdue / (1000 * 60 * 60 * 24)));
+                                const interestRate = 0.01; // 1% ต่อวัน
+                                overdueInterest = borrow.amount * interestRate * daysOverdue;
+                                totalWithInterest = borrow.amount + overdueInterest;
+                            }
+                            
+                            const isPending = borrow.status === 'return_pending';
+                            
+                            return `
+                                <div style="background:linear-gradient(135deg,${isPending ? 'rgba(255,193,7,0.15),rgba(255,152,0,0.15)' : (isOverdue ? 'rgba(255,71,87,0.15),rgba(255,107,157,0.15)' : 'rgba(0,212,255,0.15),rgba(168,85,247,0.15)')});border:2px solid ${isPending ? '#ffc107' : (isOverdue ? '#ff4757' : 'var(--primary)')};border-radius:12px;padding:16px;margin-bottom:12px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                        <div>
+                                            <div style="font-size:1.3em;font-weight:700;color:${isPending ? '#ffc107' : (isOverdue ? '#ff4757' : 'var(--primary)')};">
+                                                <i class="fas fa-money-bill-wave"></i> ${borrow.amount.toFixed(2)} บาท
+                                            </div>
+                                            ${isOverdue ? `
+                                                <div style="margin-top:8px;padding:10px;background:rgba(255,71,87,0.2);border:1px solid rgba(255,71,87,0.4);border-radius:8px;">
+                                                    <div style="font-size:1.05em;font-weight:700;color:#ff4757;margin-bottom:4px;">
+                                                        <i class="fas fa-exclamation-triangle"></i> ยอดต้องชำระ: ${totalWithInterest.toFixed(2)} บาท
+                                                    </div>
+                                                    <div style="font-size:0.9em;color:rgba(255,255,255,0.7);">
+                                                        ยอดยืม: ${borrow.amount.toFixed(2)} บาท + ดอกเบี้ย: ${overdueInterest.toFixed(2)} บาท (${daysOverdue} วัน)
+                                                    </div>
+                                                </div>
+                                            ` : ''}
+                                            <div style="font-size:0.85em;color:rgba(255,255,255,0.6);margin-top:4px;">
+                                                <i class="fas fa-calendar"></i> อนุมัติเมื่อ: ${approvedDate.toLocaleString('th-TH')}
+                                            </div>
+                                            ${isPending ? `
+                                                <div style="margin-top:8px;padding:8px 12px;background:rgba(255,193,7,0.2);border:1px solid rgba(255,193,7,0.4);border-radius:8px;font-size:0.9em;">
+                                                    <i class="fas fa-clock"></i> <strong style="color:#ffc107;">รอแอดมินตรวจสอบสลิป...</strong><br>
+                                                    <span style="font-size:0.85em;color:rgba(255,255,255,0.6);">อัปโหลดเมื่อ: ${new Date(borrow.returnSlipUploadDate || Date.now()).toLocaleString('th-TH')}</span>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                        <div style="text-align:right;">
+                                            <div id="countdown-${borrow.id}" style="font-size:${isOverdue && !isPending ? '1.1em' : '1.5em'};font-weight:700;color:${isPending ? '#ffc107' : (isOverdue ? '#ff4757' : '#2ecc71')};" data-due="${dueDate.toISOString()}">
+                                                ${isPending ? '⏳ รอตรวจสอบ' : (isOverdue ? 'เกินกำหนดแล้ว' : `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`)}
+                                            </div>
+                                            <div style="font-size:0.75em;color:rgba(255,255,255,0.5);">
+                                                ${isPending ? 'สลิปถูกส่งแล้ว' : (isOverdue ? 'กรุณาคืนเงินด่วน!' : 'เวลาคงเหลือ')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ${!isPending ? `
+                                        <div style="display:flex;gap:10px;">
+                                            <button class="btn btn-primary" onclick="uploadReturnSlip('${borrow.id}')" style="flex:1;">
+                                                <i class="fas fa-upload"></i> แนบสลิปคืนเงิน
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <div style="padding:10px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:8px;text-align:center;margin-bottom:10px;">
+                                            <div style="color:#2ecc71;font-size:0.9em;margin-bottom:8px;">
+                                                <i class="fas fa-check-circle"></i> สลิปคืนเงินถูกส่งแล้ว - รอแอดมินยืนยัน
+                                            </div>
+                                            <button class="btn btn-outline" onclick="editReturnSlip('${borrow.id}')" style="padding:8px 16px;font-size:0.85em;">
+                                                <i class="fas fa-edit"></i> แก้ไขสลิป
+                                            </button>
+                                        </div>
+                                    `}
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // คำนวณยอดยืมคงค้าง (รวมดอกเบี้ย - คิดดอกต่อแม้ส่งสลิปแล้ว)
+                        let totalWithInterestSum = 0;
+                        active.forEach(borrow => {
+                            const dueDate = new Date(borrow.dueDate);
+                            const now = new Date();
+                            const timeDiff = dueDate - now;
+                            const isOverdue = timeDiff <= 0;
+                            
+                            if (isOverdue) {
+                                const overdue = Math.abs(timeDiff);
+                                const daysOverdue = Math.max(1, Math.ceil(overdue / (1000 * 60 * 60 * 24)));
+                                const interest = borrow.amount * 0.01 * daysOverdue;
+                                totalWithInterestSum += (borrow.amount + interest);
+                            } else {
+                                totalWithInterestSum += borrow.amount;
+                            }
+                        });
+                        
+                        // อัพเดตยอดยืมคงค้าง
+                        document.getElementById('activeTotal').textContent = totalWithInterestSum.toFixed(2) + '฿';
+                        
+                        // Start countdown timer
+                        if (!window.countdownInterval) {
+                            window.countdownInterval = setInterval(updateCountdowns, 1000);
+                        }
+                        // เรียกทันทีเพื่ออัพเดตค่าให้ถูกต้อง (ไม่ต้องรอ 1 วินาที)
+                        updateCountdowns();
+                    } else {
+                        section.innerHTML = '';
+                        window.activeBorrowsData = []; // Clear global data
+                        document.getElementById('activeTotal').textContent = '0฿';
+                        if (window.countdownInterval) {
+                            clearInterval(window.countdownInterval);
+                            window.countdownInterval = null;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Load active borrows error:', e);
+            }
+        }
+
+        // Update countdowns and recalculate total with interest
+        function updateCountdowns() {
+            const now = new Date();
+            let totalWithInterestSum = 0;
+            
+            // Update countdown timers
+            document.querySelectorAll('[id^="countdown-"]').forEach(el => {
+                const dueDate = new Date(el.getAttribute('data-due'));
+                const timeDiff = dueDate - now;
+                
+                if (timeDiff <= 0) {
+                    // เกินเวลาแล้ว - แสดงว่าเกินมากี่วัน ชั่วโมง นาที วินาที
+                    const overdue = Math.abs(timeDiff);
+                    const days = Math.floor(overdue / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((overdue % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((overdue % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((overdue % (1000 * 60)) / 1000);
+                    
+                    let overdueText = 'เกินกำหนดแล้ว ';
+                    if (days > 0) {
+                        overdueText += `${days} วัน `;
+                    }
+                    overdueText += `${hours} ชม. ${minutes} นาที ${seconds} วิ`;
+                    
+                    el.textContent = overdueText;
+                    el.style.color = '#ff4757';
+                } else {
+                    // ยังไม่หมดเวลา - แสดงเวลาคงเหลือ
+                    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                    el.textContent = `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+                    el.style.color = hours < 1 ? '#ff4757' : (hours < 6 ? '#ffc107' : '#2ecc71');
+                }
+            });
+            
+            // Recalculate total with interest (if active borrows exist)
+            if (window.activeBorrowsData && window.activeBorrowsData.length > 0) {
+                window.activeBorrowsData.forEach(borrow => {
+                    const dueDate = new Date(borrow.dueDate);
+                    const timeDiff = dueDate - now;
+                    const isOverdue = timeDiff <= 0;
+                    
+                    if (isOverdue) {
+                        // คำนวณดอกเบี้ย (1% ต่อวัน, ปัดขึ้น) - คิดดอกต่อแม้ส่งสลิปแล้ว
+                        const overdue = Math.abs(timeDiff);
+                        const daysOverdue = Math.max(1, Math.ceil(overdue / (1000 * 60 * 60 * 24)));
+                        const interest = borrow.amount * 0.01 * daysOverdue;
+                        totalWithInterestSum += (borrow.amount + interest);
+                    } else {
+                        totalWithInterestSum += borrow.amount;
+                    }
+                });
+                
+                // อัพเดตยอดยืมคงค้าง
+                document.getElementById('activeTotal').textContent = totalWithInterestSum.toFixed(2) + '฿';
+                
+                // อัพเดตยืมได้อีก (ลิมิต - ยอดยืมคงค้างรวมดอกเบี้ย)
+                if (userData) {
+                    const borrowLimit = userData.maxDailyBorrow || userData.borrowLimit || 100;
+                    const remaining = borrowLimit - totalWithInterestSum;
+                    
+                    const remainingLimitContainer = document.getElementById('remainingLimitContainer');
+                    const remainingLimitEl = document.getElementById('remainingLimit');
+                    const overlimitWarning = document.getElementById('overlimitWarning');
+                    
+                    if (remaining < 0) {
+                        // เกินลิมิต - แสดงข้อความเตือน
+                        if (remainingLimitContainer) remainingLimitContainer.style.display = 'none';
+                        if (overlimitWarning) overlimitWarning.style.display = 'block';
+                    } else {
+                        // ยังไม่เกินลิมิต - แสดงยอดที่ยืมได้
+                        if (remainingLimitContainer) remainingLimitContainer.style.display = 'block';
+                        if (overlimitWarning) overlimitWarning.style.display = 'none';
+                        if (remainingLimitEl) {
+                            remainingLimitEl.textContent = remaining.toFixed(0) + '฿';
+                            remainingLimitEl.style.color = remaining > 0 ? '#2ecc71' : '#ff4757';
+                        }
+                    }
+                }
+            }
+        }
+
+        // Upload return slip
+        function uploadReturnSlip(borrowId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('slip', file);
+                formData.append('borrowId', borrowId);
+                formData.append('username', sessionStorage.getItem('username'));
+                
+                try {
+                    const res = await fetch('/api/borrow/upload-return-slip', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('อัปโหลดสลิปคืนเงินสำเร็จ! รอแอดมินตรวจสอบและยืนยัน', 'success');
+                        loadActiveBorrows();
+                        loadUserData();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (e) {
+                    showToast('ไม่สามารถอัปโหลดได้', 'error');
+                }
+            };
+            input.click();
+        }
+
+        // Edit return slip (re-upload)
+        function editReturnSlip(borrowId) {
+            if (!confirm('คุณต้องการแก้ไขสลิปคืนเงินใช่หรือไม่?\n(สลิปเดิมจะถูกแทนที่ด้วยสลิปใหม่)')) {
+                return;
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('slip', file);
+                formData.append('borrowId', borrowId);
+                formData.append('username', sessionStorage.getItem('username'));
+                
+                try {
+                    const res = await fetch('/api/borrow/upload-return-slip', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('แก้ไขสลิปคืนเงินสำเร็จ! รอแอดมินตรวจสอบใหม่', 'success');
+                        loadActiveBorrows();
+                        loadUserData();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (e) {
+                    showToast('ไม่สามารถแก้ไขสลิปได้', 'error');
+                }
+            };
+            input.click();
         }
 
         function updateUI(user) {
@@ -1062,17 +1719,87 @@
             document.getElementById('sidebarRole').textContent = user.role === 'dev' ? 'ผู้พัฒนา' : 'สมาชิก';
             document.getElementById('welcomeUser').textContent = user.username;
 
-            const points = user.points || 0;
+            const points = user.points || 50;
+            const level = user.level || 1;
+            const maxBorrow = user.maxDailyBorrow || 100;
+            const balance = user.balance !== undefined ? user.balance : 0.00;
+            const completed = user.completedBorrows || 0;
+            const lateReturns = user.lateReturnsCount || 0;
+            const pointsDeducted = user.totalPointsDeducted || 0;
+            const activeTotal = user.activeBorrowTotal || 0;
+            const remaining = user.remainingLimit || maxBorrow;
+
+            // Topbar
             document.getElementById('userPoints').textContent = points.toLocaleString();
+            document.getElementById('userLevel').textContent = level;
+            
+            // Balance display
+            const balanceEl = document.getElementById('userBalance');
+            const statBalanceEl = document.getElementById('statBalance');
+            const negativeWarning = document.getElementById('negativeBalanceWarning');
+            const warningBalanceEl = document.getElementById('warningBalance');
+            
+            balanceEl.textContent = balance.toFixed(2);
+            statBalanceEl.textContent = balance.toFixed(2) + '฿';
+            
+            // Change color based on positive/negative
+            if (balance < 0) {
+                balanceEl.style.color = '#ff4757';
+                statBalanceEl.style.color = '#ff4757';
+                // Show warning
+                if (negativeWarning) negativeWarning.style.display = 'block';
+                if (warningBalanceEl) warningBalanceEl.textContent = balance.toFixed(2) + '฿';
+            } else {
+                balanceEl.style.color = 'var(--primary)';
+                statBalanceEl.style.color = 'var(--primary)';
+                // Hide warning
+                if (negativeWarning) negativeWarning.style.display = 'none';
+            }
+
+            // Stats cards
+            document.getElementById('statLevel').textContent = level;
             document.getElementById('statPoints').textContent = points.toLocaleString();
+            document.getElementById('statMaxBorrow').textContent = maxBorrow.toLocaleString() + '฿';
+            document.getElementById('statCompleted').textContent = completed;
 
-            const borrowed = user.totalBorrowed || 0;
-            const pending = user.pendingBorrows || 0;
-            const approved = user.approvedBorrows || 0;
+            // Borrow summary
+            document.getElementById('activeTotal').textContent = activeTotal.toLocaleString() + '฿';
+            
+            // เช็คว่าเกินลิมิตหรือไม่
+            const remainingLimitContainer = document.getElementById('remainingLimitContainer');
+            const remainingLimitEl = document.getElementById('remainingLimit');
+            const overlimitWarning = document.getElementById('overlimitWarning');
+            
+            if (activeTotal > maxBorrow) {
+                // เกินลิมิต - แสดงข้อความเตือน
+                if (remainingLimitContainer) remainingLimitContainer.style.display = 'none';
+                if (overlimitWarning) overlimitWarning.style.display = 'block';
+            } else {
+                // ยังไม่เกินลิมิต - แสดงยอดที่ยืมได้
+                if (remainingLimitContainer) remainingLimitContainer.style.display = 'block';
+                if (overlimitWarning) overlimitWarning.style.display = 'none';
+                if (remainingLimitEl) {
+                    remainingLimitEl.textContent = remaining.toLocaleString() + '฿';
+                    remainingLimitEl.style.color = remaining > 0 ? '#2ecc71' : '#ff4757';
+                }
+            }
+            
+            document.getElementById('onTimeCount').textContent = completed;
+            document.getElementById('bonusPoints').textContent = completed;
+            document.getElementById('lateCount').textContent = lateReturns;
+            document.getElementById('deductedPoints').textContent = pointsDeducted;
 
-            document.getElementById('statBorrowed').textContent = borrowed.toLocaleString();
-            document.getElementById('statPending').textContent = pending;
-            document.getElementById('statApproved').textContent = approved;
+            // Welcome text
+            document.getElementById('levelDisplay').textContent = level;
+            document.getElementById('pointsDisplay').textContent = points.toLocaleString();
+            document.getElementById('limitDisplay').textContent = maxBorrow.toLocaleString();
+
+            // Update input max value
+            const borrowInput = document.getElementById('borrowAmount');
+            if (borrowInput) {
+                borrowInput.max = remaining;
+                borrowInput.placeholder = `ยืมได้อีก ${remaining} บาท`;
+            }
 
             // Admin update card
             if (user.role === 'dev') {
@@ -1098,49 +1825,259 @@
             el.classList.add('selected');
             selectedAmount = amount;
             document.getElementById('borrowAmount').value = amount;
-            calcBorrowSummary();
+            
+            // อัพเดตตารางถ้าเปิดอยู่
+            if (document.getElementById('calcTableContainer').style.display === 'block') {
+                generateCalcTable();
+            }
+            
             showToast(`เลือกแพ็กเกจ ${amount.toLocaleString()} บาท`, 'success');
         }
 
         function calcBorrowSummary() {
-            const amount = parseFloat(document.getElementById('borrowAmount').value) || 0;
-            const days = parseFloat(document.getElementById('borrowDays').value) || 0;
-            const interest = days > 1 ? CONFIG.OVERDUE_INTEREST : CONFIG.DEFAULT_INTEREST;
-            const total = amount + (amount * interest / 100);
-            document.getElementById('borrowTotal').value = total.toLocaleString() + ' บาท';
+            // ฟังก์ชันนี้ไม่ใช้แล้ว เพราะไม่มีช่อง days ในฟอร์ม
+            // เก็บไว้เผื่อใช้ใน previewDays
+        }
+        
+        function updateCalcTable() {
+            // อัพเดตตารางถ้าเปิดอยู่
+            if (document.getElementById('calcTableContainer').style.display === 'block') {
+                generateCalcTable();
+            }
+        }
+        
+        function validateBorrowAmount(input) {
+            const amount = parseFloat(input.value);
+            const warning = document.getElementById('amountWarning');
+            const warningText = document.getElementById('amountWarningText');
+            
+            if (window.currentUser) {
+                const remaining = window.currentUser.remainingLimit || 100;
+                const activeTotal = window.currentUser.activeBorrowTotal || 0;
+                const maxLimit = window.currentUser.maxDailyBorrow || 100;
+                const userLevel = window.currentUser.level || 1;
+                
+                if (remaining <= 0) {
+                    warning.style.display = 'block';
+                    warningText.textContent = `คุณยืมครบ ${maxLimit} บาทแล้ว กรุณาคืนเงินก่อนยืมใหม่`;
+                    input.style.borderColor = '#ff4757';
+                } else if (amount > remaining) {
+                    warning.style.display = 'block';
+                    warningText.textContent = `คุณยืมไปแล้ว ${activeTotal} บาท ยืมได้อีกแค่ ${remaining} บาท`;
+                    input.style.borderColor = '#ff6b9d';
+                } else {
+                    warning.style.display = 'none';
+                    input.style.borderColor = 'rgba(0,212,255,0.2)';
+                }
+            }
+        }
+
+        function toggleCalcTable() {
+            const container = document.getElementById('calcTableContainer');
+            const icon = document.getElementById('calcToggleIcon');
+            const txt = document.getElementById('calcToggleTxt');
+            const btn = document.getElementById('calcToggleBtn');
+            
+            if (container.style.display === 'none') {
+                // แสดงตาราง
+                container.style.display = 'block';
+                icon.className = 'fas fa-chevron-up';
+                txt.textContent = 'ซ่อนตารางคำนวณ';
+                btn.style.background = 'linear-gradient(135deg,rgba(255,107,157,0.15),rgba(255,71,87,0.15))';
+                btn.style.borderColor = 'rgba(255,107,157,0.3)';
+                
+                // สร้างตาราง
+                generateCalcTable();
+            } else {
+                // ซ่อนตาราง
+                container.style.display = 'none';
+                icon.className = 'fas fa-chevron-down';
+                txt.textContent = 'แสดงตารางคำนวณ 1-31 วัน';
+                btn.style.background = 'linear-gradient(135deg,rgba(0,212,255,0.15),rgba(168,85,247,0.15))';
+                btn.style.borderColor = 'rgba(0,212,255,0.3)';
+            }
+        }
+
+        function generateCalcTable() {
+            const amount = parseFloat(document.getElementById('borrowAmount').value) || 100;
+            document.getElementById('tableAmount').textContent = amount.toLocaleString() + ' บาท';
+            
+            const tbody = document.getElementById('calcTableBody');
+            tbody.innerHTML = '';
+            
+            for (let day = 1; day <= 31; day++) {
+                let interestAmount = 0;
+                let interestPercent = 0;
+                let total = amount;
+                let pointsLost = 0;
+                let status = '';
+                let statusColor = '';
+                let rowBg = '';
+                
+                if (day === 1) {
+                    // วันที่ 1: ไม่มีดอก ไม่หักแต้ม
+                    status = '✓ ไม่มีดอก';
+                    statusColor = '#2ecc71';
+                    rowBg = 'rgba(46,204,113,0.08)';
+                    pointsLost = 0;
+                } else if (day <= 3) {
+                    // วันที่ 2-3: ดอกต่ำ
+                    const daysOverdue = day - 1;
+                    interestAmount = amount * CONFIG.OVERDUE_INTEREST_RATE * daysOverdue;
+                    interestPercent = 1.0 * daysOverdue;
+                    total = amount + interestAmount;
+                    pointsLost = daysOverdue;
+                    status = '⚠️ ดอกต่ำ';
+                    statusColor = '#ffc107';
+                    rowBg = 'rgba(255,193,7,0.05)';
+                } else if (day <= 7) {
+                    // วันที่ 4-7: ดอกปานกลาง
+                    const daysOverdue = day - 1;
+                    interestAmount = amount * CONFIG.OVERDUE_INTEREST_RATE * daysOverdue;
+                    interestPercent = 1.0 * daysOverdue;
+                    total = amount + interestAmount;
+                    pointsLost = daysOverdue;
+                    status = '⚠️ ดอกปานกลาง';
+                    statusColor = '#ff6b9d';
+                    rowBg = 'rgba(255,107,157,0.05)';
+                } else {
+                    // วันที่ 8-31: ดอกสูง
+                    const daysOverdue = day - 1;
+                    interestAmount = amount * CONFIG.OVERDUE_INTEREST_RATE * daysOverdue;
+                    interestPercent = 1.0 * daysOverdue;
+                    total = amount + interestAmount;
+                    pointsLost = daysOverdue;
+                    status = '❌ ดอกสูง';
+                    statusColor = '#ff4757';
+                    rowBg = 'rgba(255,71,87,0.08)';
+                }
+                
+                const row = document.createElement('tr');
+                row.style.background = rowBg;
+                row.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                row.style.transition = 'all 0.3s';
+                row.onmouseenter = function() { this.style.background = 'rgba(0,212,255,0.1)'; };
+                row.onmouseleave = function() { this.style.background = rowBg; };
+                
+                row.innerHTML = `
+                    <td style="padding:8px 4px;font-weight:600;color:#fff;">${day}</td>
+                    <td style="padding:8px 4px;color:${interestAmount > 0 ? '#ff6b9d' : '#2ecc71'};font-size:0.9em;">
+                        ${interestPercent.toFixed(0)}% (${interestAmount.toFixed(2)}฿)
+                    </td>
+                    <td style="padding:8px 4px;font-weight:700;color:var(--primary);font-size:1em;">
+                        ${total.toFixed(2)} ฿
+                    </td>
+                    <td style="padding:8px 4px;color:${pointsLost > 0 ? '#ff4757' : '#2ecc71'};font-weight:600;">
+                        ${pointsLost > 0 ? '-' + pointsLost : '0'}
+                    </td>
+                    <td style="padding:8px 4px;color:${statusColor};font-weight:600;font-size:0.85em;">
+                        ${status}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            }
+        }
+
+        function previewDays(days) {
+            const amount = parseFloat(document.getElementById('borrowAmount').value) || 100;
+            
+            let interestAmount = 0;
+            let interestPercent = 0;
+            let total = amount;
+            
+            if (days > 1) {
+                const daysOverdue = days - 1;
+                interestAmount = amount * CONFIG.OVERDUE_INTEREST_RATE * daysOverdue;
+                interestPercent = 1.0 * daysOverdue;
+                total = amount + interestAmount;
+            }
+            
+            // แสดงผลลัพธ์
+            document.getElementById('previewAmount').textContent = amount.toLocaleString() + ' บาท';
+            document.getElementById('previewDays').textContent = days + ' วัน';
+            
+            if (days > 1) {
+                document.getElementById('previewInterest').textContent = interestAmount.toFixed(2) + ' บาท (' + interestPercent.toFixed(0) + '%)';
+                document.getElementById('previewInterest').style.color = '#ff6b9d';
+            } else {
+                document.getElementById('previewInterest').textContent = '0.00 บาท (0%)';
+                document.getElementById('previewInterest').style.color = '#2ecc71';
+            }
+            
+            document.getElementById('previewTotal').textContent = total.toFixed(2) + ' บาท';
+            document.getElementById('calcPreview').style.display = 'block';
         }
 
         function resetBorrowForm() {
             document.getElementById('borrowAmount').value = '';
-            document.getElementById('borrowDays').value = CONFIG.DEFAULT_DAYS;
             document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('calcPreview').style.display = 'none';
             selectedAmount = 0;
-            calcBorrowSummary();
         }
 
         // ===== SUBMIT BORROW =====
         function submitBorrow() {
             const amount = parseFloat(document.getElementById('borrowAmount').value);
-            const days = parseFloat(document.getElementById('borrowDays').value);
-            const interest = days > 1 ? CONFIG.OVERDUE_INTEREST : CONFIG.DEFAULT_INTEREST;
+            const walletNumber = document.getElementById('walletNumber').value.trim();
+            const accountName = document.getElementById('accountName').value.trim();
+
+            // เช็คว่ายืนยันตัวตนแล้วหรือยัง
+            if (window.currentUser && !window.currentUser.verified) {
+                showToast('กรุณายืนยันตัวตนก่อนยืมเงิน (ไปเมนู "ยืนยันตัวตน")', 'error');
+                setTimeout(() => {
+                    showSection('verify');
+                }, 1500);
+                return;
+            }
 
             if (!amount || amount <= 0) {
                 showToast('กรุณากรอกจำนวนเงินที่ต้องการยืม', 'error');
                 return;
             }
-            if (!days || days <= 0) {
-                showToast('กรุณากรอกจำนวนวันที่ต้องการยืม', 'error');
+            
+            // Check user's remaining limit
+            if (window.currentUser) {
+                const remaining = window.currentUser.remainingLimit || 0;
+                const activeTotal = window.currentUser.activeBorrowTotal || 0;
+                const maxLimit = window.currentUser.maxDailyBorrow || 100;
+                
+                if (remaining <= 0) {
+                    showToast(`คุณยืมครบ ${maxLimit} บาทแล้ว! กรุณาคืนเงินก่อนยืมใหม่`, 'error');
+                    return;
+                }
+                
+                if (amount > remaining) {
+                    showToast(`คุณยืมไปแล้ว ${activeTotal} บาท ยืมได้อีก ${remaining} บาท เท่านั้น!`, 'error');
+                    return;
+                }
+            }
+            
+            if (!walletNumber) {
+                showToast('กรุณากรอกเบอร์วอเลท', 'error');
+                return;
+            }
+            
+            if (!accountName) {
+                showToast('กรุณากรอกชื่อบัญชี', 'error');
                 return;
             }
 
-            const total = amount + (amount * interest / 100);
-            pendingBorrow = { amount, days, interest, total };
-            const rateText = days > 1 ? `ดอกเบี้ย <strong>${interest}%</strong> (เกิน 1 วัน)` : 'ดอกเบี้ย <strong>0%</strong> (1 วันคืน)';
+            // ยืมแค่ 1 วัน (24 ชั่วโมง) เท่านั้น
+            const days = 1;
+            const interest = 0; // ไม่มีดอกเบี้ยถ้าคืนภายใน 24 ชั่วโมง
+            const total = amount;
+            
+            pendingBorrow = { amount, days, interest, total, walletNumber, accountName };
             document.getElementById('confirmText').innerHTML =
                 `คุณต้องการยืมเงิน <strong>${amount.toLocaleString()} บาท</strong><br>
-                 ระยะเวลา <strong>${days} วัน</strong><br>
-                 ${rateText}<br>
-                 ยอดชำระทั้งหมด <strong style="color:var(--primary);">${total.toLocaleString()} บาท</strong>`;
+                 ระยะเวลา <strong>1 วัน (24 ชั่วโมง)</strong><br>
+                 เบอร์วอเลท: <strong>${walletNumber}</strong><br>
+                 ชื่อบัญชี: <strong>${accountName}</strong><br><br>
+                 <span style="color:#2ecc71;">✓ คืนภายใน 24 ชม. = ไม่มีดอกเบี้ย + ได้ 1 แต้ม</span><br>
+                 <span style="color:#ff6b9d;font-size:0.85em;">⚠️ คืนช้า = คิดดอก 1%/วัน + หักแต้ม 1/วัน</span><br><br>
+                 ยอดชำระ (ถ้าคืนตรงเวลา): <strong style="color:var(--primary);font-size:1.2em;">${total.toLocaleString()} บาท</strong><br>
+                 <span style="font-size:0.8em;color:rgba(255,255,255,0.5);">⏱️ จะเริ่มนับเวลา 24 ชม. เมื่อแอดมินอนุมัติ</span>`;
             document.getElementById('confirmModal').classList.add('show');
         }
 
@@ -1160,6 +2097,9 @@
                     body: JSON.stringify({ username, ...pendingBorrow })
                 });
                 const data = await res.json();
+                
+                closeModal();
+                
                 if (data.success) {
                     showToast('ส่งคำขอยืมเงินสำเร็จ!', 'success');
                     resetBorrowForm();
@@ -1168,9 +2108,9 @@
                     showToast(data.message || 'เกิดข้อผิดพลาด', 'error');
                 }
             } catch (e) {
+                closeModal();
                 showToast('ไม่สามารถส่งคำขอได้', 'error');
             }
-            closeModal();
         }
 
         // ===== HISTORY =====
@@ -1187,16 +2127,31 @@
                 const data = await res.json();
                 const tbody = document.getElementById('historyBody');
                 if (data.success && data.history && data.history.length > 0) {
-                    tbody.innerHTML = data.history.map(h => `
+                    tbody.innerHTML = data.history.map(h => {
+                        const borrowDate = new Date(h.date);
+                        const dateStr = borrowDate.toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                        const timeStr = borrowDate.toLocaleTimeString('th-TH', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        return `
                         <tr>
-                            <td>${new Date(h.date).toLocaleDateString('th-TH')}</td>
+                            <td>
+                                <div>${dateStr}</div>
+                                <div style="font-size:0.85em;color:rgba(255,255,255,0.5);margin-top:2px;">${timeStr}</div>
+                            </td>
                             <td>${h.amount.toLocaleString()}</td>
                             <td>${h.days} วัน</td>
                             <td>${h.interest}%</td>
                             <td>${h.total.toLocaleString()}</td>
                             <td><span class="status ${h.status}">${statusThai(h.status)}</span></td>
                         </tr>
-                    `).join('');
+                    `}).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.3);">ไม่มีประวัติ</td></tr>';
                 }
@@ -1206,8 +2161,403 @@
         }
 
         function statusThai(s) {
-            const map = { pending: 'รออนุมัติ', approved: 'อนุมัติ', rejected: 'ปฏิเสธ', completed: 'สำเร็จ' };
+            const map = { 
+                pending: 'รออนุมัติ', 
+                approved: 'อนุมัติ', 
+                rejected: 'ปฏิเสธ', 
+                completed: 'สำเร็จ',
+                return_pending: 'รอตรวจสอบ' 
+            };
             return map[s] || s;
+        }
+
+        // ===== RETURN HISTORY =====
+        async function loadReturnHistory() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+
+            try {
+                const res = await fetch('/api/user/return-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                const grid = document.getElementById('returnHistoryGrid');
+                
+                if (data.success && data.history && data.history.length > 0) {
+                    grid.innerHTML = data.history.map(h => {
+                        const completedDate = new Date(h.completedDate);
+                        const borrowDate = new Date(h.borrowDate);
+                        const dueDate = new Date(h.dueDate);
+                        const onTime = h.returnedOnTime;
+                        
+                        return `
+                            <div style="background:${onTime ? 'linear-gradient(135deg,rgba(46,204,113,0.1),rgba(39,174,96,0.1))' : 'linear-gradient(135deg,rgba(255,107,157,0.1),rgba(255,71,87,0.1))'};border:2px solid ${onTime ? '#2ecc71' : '#ff6b9d'};border-radius:14px;padding:20px;margin-bottom:16px;transition:all 0.3s;">
+                                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+                                    <div>
+                                        <div style="font-size:1.4em;font-weight:700;color:${onTime ? '#2ecc71' : '#ff6b9d'};margin-bottom:6px;">
+                                            <i class="fas fa-${onTime ? 'check-circle' : 'exclamation-triangle'}"></i> ${h.amount.toFixed(2)} บาท
+                                        </div>
+                                        <div style="font-size:0.85em;color:rgba(255,255,255,0.6);">
+                                            <i class="fas fa-calendar"></i> ยืมเมื่อ: ${borrowDate.toLocaleDateString('th-TH', {year: 'numeric', month: 'long', day: 'numeric'})}
+                                        </div>
+                                        <div style="font-size:0.85em;color:rgba(255,255,255,0.6);">
+                                            <i class="fas fa-clock"></i> คืนเมื่อ: ${completedDate.toLocaleDateString('th-TH', {year: 'numeric', month: 'long', day: 'numeric'})} ${completedDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="padding:8px 16px;background:${onTime ? 'rgba(46,204,113,0.2)' : 'rgba(255,107,157,0.2)'};border:1px solid ${onTime ? '#2ecc71' : '#ff6b9d'};border-radius:10px;font-size:0.9em;color:${onTime ? '#2ecc71' : '#ff6b9d'};font-weight:600;">
+                                            ${onTime ? '✅ คืนตรงเวลา' : '⚠️ คืนช้า'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);">
+                                    <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;">
+                                        <div style="font-size:0.75em;color:rgba(255,255,255,0.5);margin-bottom:4px;">กำหนดคืน</div>
+                                        <div style="font-size:0.9em;font-weight:600;color:#ffc107;">
+                                            ${dueDate.toLocaleDateString('th-TH', {month: 'short', day: 'numeric'})} ${dueDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}
+                                        </div>
+                                    </div>
+                                    <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;">
+                                        <div style="font-size:0.75em;color:rgba(255,255,255,0.5);margin-bottom:4px;">แต้มที่ได้</div>
+                                        <div style="font-size:1.2em;font-weight:700;color:${onTime ? '#2ecc71' : '#ff4757'};">
+                                            ${onTime ? '+1 แต้ม 🎉' : '0 แต้ม'}
+                                        </div>
+                                    </div>
+                                    ${h.returnSlipUrl ? `
+                                        <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;">
+                                            <button onclick="window.open('${h.returnSlipUrl}', '_blank')" style="width:100%;padding:8px;background:rgba(0,212,255,0.2);border:1px solid var(--primary);border-radius:6px;color:var(--primary);font-size:0.85em;cursor:pointer;transition:all 0.3s;">
+                                                <i class="fas fa-receipt"></i> ดูสลิป
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = `
+                        <div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);">
+                            <i class="fas fa-inbox" style="font-size:4em;margin-bottom:16px;opacity:0.3;"></i>
+                            <div style="font-size:1.1em;">ยังไม่มีประวัติคืนเงิน</div>
+                            <div style="font-size:0.9em;margin-top:8px;">เมื่อคุณคืนเงินสำเร็จ ประวัติจะแสดงที่นี่</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Load return history error:', e);
+                showToast('ไม่สามารถโหลดประวัติคืนเงินได้', 'error');
+            }
+        }
+        
+        // Load recent return history (for home page - limit 3)
+        async function loadRecentReturnHistory() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+
+            try {
+                const res = await fetch('/api/user/return-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                const container = document.getElementById('recentReturnHistory');
+                
+                if (data.success && data.history && data.history.length > 0) {
+                    const recent = data.history.slice(0, 3); // แสดง 3 รายการล่าสุด
+                    container.innerHTML = recent.map(h => {
+                        const completedDate = new Date(h.completedDate);
+                        const dueDate = new Date(h.dueDate);
+                        const onTime = h.returnedOnTime;
+                        
+                        // คำนวณดอกเบี้ย
+                        let interest = 0;
+                        let totalPaid = h.amount;
+                        let daysLate = 0;
+                        
+                        if (!onTime) {
+                            const timeDiff = completedDate - dueDate;
+                            daysLate = Math.max(1, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
+                            interest = h.amount * 0.01 * daysLate;
+                            totalPaid = h.amount + interest;
+                        }
+                        
+                        return `
+                            <div style="background:${onTime ? 'rgba(46,204,113,0.05)' : 'rgba(255,107,157,0.05)'};border:1px solid ${onTime ? 'rgba(46,204,113,0.2)' : 'rgba(255,107,157,0.2)'};border-radius:10px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <div style="font-size:1.1em;font-weight:600;color:${onTime ? '#2ecc71' : '#ff6b9d'};margin-bottom:4px;">
+                                        <i class="fas fa-${onTime ? 'check-circle' : 'exclamation-triangle'}"></i> ${totalPaid.toFixed(2)} บาท
+                                    </div>
+                                    ${!onTime ? `
+                                        <div style="font-size:0.85em;color:#ff6b9d;margin-bottom:4px;">
+                                            ยอดยืม: ${h.amount.toFixed(2)}฿ + ดอก: ${interest.toFixed(2)}฿ (${daysLate} วัน)
+                                        </div>
+                                    ` : ''}
+                                    <div style="font-size:0.8em;color:rgba(255,255,255,0.5);">
+                                        ${completedDate.toLocaleDateString('th-TH', {month: 'short', day: 'numeric', year: 'numeric'})} ${completedDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="padding:6px 12px;background:${onTime ? 'rgba(46,204,113,0.15)' : 'rgba(255,107,157,0.15)'};border-radius:8px;font-size:0.8em;color:${onTime ? '#2ecc71' : '#ff6b9d'};font-weight:600;margin-bottom:4px;">
+                                        ${onTime ? 'คืนตรงเวลา' : `คืนช้า ${daysLate} วัน`}
+                                    </div>
+                                    <div style="font-size:0.85em;font-weight:700;color:${onTime ? '#2ecc71' : '#ff4757'};">
+                                        ${onTime ? '+1 แต้ม' : `-${daysLate} แต้ม`}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('') + `
+                        <button onclick="showSection('return-history')" style="width:100%;padding:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);border-radius:8px;color:var(--primary);font-size:0.9em;cursor:pointer;transition:all 0.3s;margin-top:8px;">
+                            <i class="fas fa-list"></i> ดูประวัติทั้งหมด
+                        </button>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align:center;padding:30px 20px;color:rgba(255,255,255,0.3);">
+                            <i class="fas fa-inbox" style="font-size:2.5em;margin-bottom:12px;opacity:0.3;"></i>
+                            <div style="font-size:0.95em;">ยังไม่มีประวัติคืนเงิน</div>
+                            <div style="font-size:0.85em;margin-top:6px;">เมื่อคุณคืนเงินสำเร็จ ประวัติจะแสดงที่นี่</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Load recent return history error:', e);
+            }
+        }
+
+        // ===== NOTIFICATIONS =====
+        async function loadNotifications() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+
+            try {
+                const res = await fetch('/api/user/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Update badge
+                    const badge = document.getElementById('notifBadge');
+                    if (data.unreadCount > 0) {
+                        badge.textContent = data.unreadCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    
+                    // Render notifications
+                    const grid = document.getElementById('notificationsGrid');
+                    
+                    if (data.notifications && data.notifications.length > 0) {
+                        grid.innerHTML = data.notifications.map(notif => {
+                            const notifDate = new Date(notif.date);
+                            const dateStr = notifDate.toLocaleDateString('th-TH', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                            const timeStr = notifDate.toLocaleTimeString('th-TH', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            const isApproved = notif.type === 'approved';
+                            const bgColor = isApproved ? 
+                                'linear-gradient(135deg,rgba(0,212,255,0.1),rgba(168,85,247,0.1))' : 
+                                'linear-gradient(135deg,rgba(46,204,113,0.1),rgba(39,174,96,0.1))';
+                            const borderColor = isApproved ? 'rgba(0,212,255,0.3)' : 'rgba(46,204,113,0.3)';
+                            const iconColor = isApproved ? '#00d4ff' : '#2ecc71';
+                            
+                            return `
+                                <div onclick="markAsRead('${notif.id}')" style="background:${bgColor};border:2px solid ${borderColor};border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.3s;opacity:${notif.read ? '0.6' : '1'};" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px ${borderColor}'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+                                        <div style="flex:1;">
+                                            <div style="font-size:1.2em;font-weight:700;color:${iconColor};margin-bottom:6px;">
+                                                ${notif.title}
+                                            </div>
+                                            <div style="font-size:0.95em;color:rgba(255,255,255,0.8);margin-bottom:8px;">
+                                                ${notif.message}
+                                            </div>
+                                            <div style="display:flex;gap:16px;font-size:0.85em;color:rgba(255,255,255,0.5);">
+                                                <span><i class="fas fa-calendar"></i> ${dateStr}</span>
+                                                <span><i class="fas fa-clock"></i> ${timeStr}</span>
+                                            </div>
+                                        </div>
+                                        ${!notif.read ? `
+                                            <div style="width:12px;height:12px;background:${iconColor};border-radius:50%;box-shadow:0 0 10px ${iconColor};"></div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        grid.innerHTML = `
+                            <div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);">
+                                <i class="fas fa-bell-slash" style="font-size:4em;margin-bottom:16px;opacity:0.3;"></i>
+                                <div style="font-size:1.1em;">ยังไม่มีการแจ้งเตือน</div>
+                                <div style="font-size:0.9em;margin-top:8px;">การแจ้งเตือนจะแสดงที่นี่เมื่อมีรายการใหม่</div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error('Load notifications error:', e);
+                showToast('ไม่สามารถโหลดการแจ้งเตือนได้', 'error');
+            }
+        }
+        
+        async function markAsRead(notificationId) {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+            
+            try {
+                const res = await fetch('/api/user/notifications/mark-read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, notificationId })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    loadNotifications();
+                }
+            } catch (e) {
+                console.error('Mark as read error:', e);
+            }
+        }
+        
+        async function markAllAsRead() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+            
+            try {
+                const res = await fetch('/api/user/notifications/mark-read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('ทำเครื่องหมายอ่านทั้งหมดแล้ว', 'success');
+                    loadNotifications();
+                }
+            } catch (e) {
+                console.error('Mark all as read error:', e);
+            }
+        }
+
+        // ===== PAYMENT CONFIG =====
+        async function loadPaymentConfig() {
+            try {
+                const res = await fetch('/api/payment/config');
+                const data = await res.json();
+                
+                if (data.success && data.config) {
+                    const { truemoney, bank } = data.config;
+                    const grid = document.getElementById('paymentMethodsGrid');
+                    
+                    grid.innerHTML = `
+                        <!-- TrueMoney Wallet -->
+                        <div style="background:linear-gradient(135deg,rgba(255,107,157,0.08),rgba(255,71,87,0.08));border:2px solid rgba(255,107,157,0.2);border-radius:14px;padding:20px;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 25px rgba(255,107,157,0.2)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                                <div style="width:50px;height:50px;background:linear-gradient(135deg,#ff6b9d,#ff4757);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5em;">
+                                    <i class="fas fa-wallet" style="color:#fff;"></i>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:1.1em;font-weight:700;color:#ff6b9d;">TrueMoney Wallet</div>
+                                    <div style="font-size:0.8em;color:rgba(255,255,255,0.5);">กระเป๋าเงินทรูมันนี่</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;margin-bottom:12px;">
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                                    <i class="fas fa-hashtag"></i> เลขบัญชี
+                                </div>
+                                <div style="font-size:1.3em;font-weight:700;color:#ff6b9d;letter-spacing:2px;font-family:monospace;">
+                                    ${truemoney.accountNumber}
+                                </div>
+                            </div>
+                            
+                            <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;margin-bottom:16px;">
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                                    <i class="fas fa-user"></i> ชื่อบัญชี
+                                </div>
+                                <div style="font-size:1.1em;font-weight:600;color:#fff;">
+                                    ${truemoney.accountName}
+                                </div>
+                            </div>
+                            
+                            ${truemoney.qrCodeUrl ? `
+                                <div style="text-align:center;background:rgba(255,255,255,0.95);border-radius:10px;padding:12px;">
+                                    <img src="${truemoney.qrCodeUrl}" alt="TrueMoney QR Code" style="max-width:100%;height:auto;border-radius:8px;max-height:200px;">
+                                    <div style="font-size:0.75em;color:rgba(0,0,0,0.6);margin-top:8px;">
+                                        <i class="fas fa-qrcode"></i> สแกน QR Code เพื่อโอนเงิน
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="text-align:center;padding:30px;background:rgba(0,0,0,0.2);border-radius:10px;border:2px dashed rgba(255,107,157,0.3);">
+                                    <i class="fas fa-qrcode" style="font-size:2.5em;color:rgba(255,255,255,0.2);margin-bottom:8px;"></i>
+                                    <div style="font-size:0.85em;color:rgba(255,255,255,0.4);">ยังไม่มี QR Code</div>
+                                </div>
+                            `}
+                        </div>
+                        
+                        <!-- Bank Account -->
+                        <div style="background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(168,85,247,0.08));border:2px solid rgba(0,212,255,0.2);border-radius:14px;padding:20px;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 25px rgba(0,212,255,0.2)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                                <div style="width:50px;height:50px;background:linear-gradient(135deg,#00d4ff,#a855f7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5em;">
+                                    <i class="fas fa-university" style="color:#fff;"></i>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:1.1em;font-weight:700;color:#00d4ff;">${bank.bankName}</div>
+                                    <div style="font-size:0.8em;color:rgba(255,255,255,0.5);">บัญชีธนาคาร</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;margin-bottom:12px;">
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                                    <i class="fas fa-hashtag"></i> เลขบัญชี
+                                </div>
+                                <div style="font-size:1.3em;font-weight:700;color:#00d4ff;letter-spacing:2px;font-family:monospace;">
+                                    ${bank.accountNumber}
+                                </div>
+                            </div>
+                            
+                            <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;margin-bottom:16px;">
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-bottom:6px;">
+                                    <i class="fas fa-user"></i> ชื่อบัญชี
+                                </div>
+                                <div style="font-size:1.1em;font-weight:600;color:#fff;">
+                                    ${bank.accountName || 'ไม่ระบุ'}
+                                </div>
+                            </div>
+                            
+                            ${bank.qrCodeUrl ? `
+                                <div style="text-align:center;background:rgba(255,255,255,0.95);border-radius:10px;padding:12px;">
+                                    <img src="${bank.qrCodeUrl}" alt="Bank QR Code" style="max-width:100%;height:auto;border-radius:8px;max-height:200px;">
+                                    <div style="font-size:0.75em;color:rgba(0,0,0,0.6);margin-top:8px;">
+                                        <i class="fas fa-qrcode"></i> สแกน QR Code เพื่อโอนเงิน
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="text-align:center;padding:30px;background:rgba(0,0,0,0.2);border-radius:10px;border:2px dashed rgba(0,212,255,0.3);">
+                                    <i class="fas fa-qrcode" style="font-size:2.5em;color:rgba(255,255,255,0.2);margin-bottom:8px;"></i>
+                                    <div style="font-size:0.85em;color:rgba(255,255,255,0.4);">ยังไม่มี QR Code</div>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Load payment config error:', e);
+            }
         }
 
         // ===== UPDATES =====
@@ -1259,6 +2609,169 @@
             }
         }
 
+        // ===== LEVEL TABLE =====
+        function loadLevelTable() {
+            const tbody = document.getElementById('levelTableBody');
+            if (!tbody) return;
+            
+            let html = '';
+            for (let lv = 1; lv <= 20; lv++) {
+                const points = 50 + (lv - 1) * 50;
+                const maxBorrow = 50 + (lv * 50);
+                const rowColor = lv === 1 ? 'rgba(255,193,7,0.15)' : (lv === 20 ? 'rgba(0,212,255,0.15)' : 'transparent');
+                const note = lv === 1 ? 'เริ่มต้น' : lv === 20 ? 'สูงสุด' : '';
+                
+                html += `
+                    <tr style="background:${rowColor};border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:10px 8px;color:${lv === 20 ? 'var(--primary)' : '#fff'};font-weight:${lv === 20 ? '700' : '400'};font-size:${lv === 20 ? '1.1em' : '1em'};">${lv}</td>
+                        <td style="padding:10px 8px;color:#ffc107;">${points}</td>
+                        <td style="padding:10px 8px;color:#2ecc71;font-weight:600;">${maxBorrow} ฿</td>
+                        <td style="padding:10px 8px;color:rgba(255,255,255,0.5);font-size:0.85em;">${note}</td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+
+        // ===== ADMIN SLIPS =====
+        async function loadAdminSlips() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+            
+            try {
+                const res = await fetch('/api/user/admin-slips', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                
+                const grid = document.getElementById('slipsGrid');
+                
+                if (data.success && data.slips.length > 0) {
+                    grid.innerHTML = data.slips.map(slip => {
+                        const uploadDate = new Date(slip.uploadDate);
+                        const dateStr = uploadDate.toLocaleDateString('th-TH', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        });
+                        const timeStr = uploadDate.toLocaleTimeString('th-TH', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        
+                        return `
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onclick="window.open('${slip.slipUrl}', '_blank')" onmouseover="this.style.borderColor='var(--primary)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.2)';this.style.transform='translateY(0)'">
+                                <div style="width:100%;height:180px;background:rgba(0,0,0,0.3);border-radius:8px;margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                                    <img src="${slip.slipUrl}" alt="สลิป" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                    <div style="display:none;flex-direction:column;align-items:center;color:rgba(255,255,255,0.5);">
+                                        <i class="fas fa-file-pdf" style="font-size:3em;margin-bottom:8px;"></i>
+                                        <span style="font-size:0.8em;">PDF</span>
+                                    </div>
+                                </div>
+                                <div style="font-size:0.9em;">
+                                    <div style="color:var(--primary);font-weight:600;margin-bottom:6px;">
+                                        <i class="fas fa-money-bill-wave"></i> ${slip.amount.toFixed(2)} บาท
+                                    </div>
+                                    <div style="color:rgba(255,255,255,0.6);font-size:0.85em;margin-bottom:4px;">
+                                        <i class="fas fa-calendar"></i> ${dateStr}
+                                    </div>
+                                    <div style="color:rgba(255,255,255,0.6);font-size:0.85em;">
+                                        <i class="fas fa-clock"></i> ${timeStr}
+                                    </div>
+                                    <div style="margin-top:8px;padding:6px 10px;background:rgba(0,212,255,0.1);border-radius:6px;text-align:center;font-size:0.8em;color:var(--primary);">
+                                        <i class="fas fa-user-shield"></i> โดย ${slip.uploadedBy}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.3);grid-column:1/-1;"><i class="fas fa-inbox" style="font-size:3em;margin-bottom:16px;display:block;"></i>ยังไม่มีสลิปการเงิน</div>';
+                }
+            } catch (e) {
+                console.error('Load slips error:', e);
+            }
+        }
+
+        // ===== VERIFY IDENTITY =====
+        async function checkVerifyStatus() {
+            const username = sessionStorage.getItem('username');
+            if (!username) return;
+            
+            try {
+                const res = await fetch('/api/user/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                
+                const statusEl = document.getElementById('verifyStatus');
+                const formEl = document.getElementById('verifyForm');
+                
+                if (data.success && data.user.verified) {
+                    statusEl.innerHTML = `
+                        <div style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:16px;text-align:center;">
+                            <i class="fas fa-check-circle" style="font-size:2.5em;color:#2ecc71;margin-bottom:8px;"></i><br>
+                            <strong style="color:#2ecc71;font-size:1.1em;">ยืนยันตัวตนแล้ว ✅</strong><br>
+                            <span style="font-size:0.9em;color:rgba(255,255,255,0.6);">
+                                ชื่อ: <strong style="color:#fff;">${data.user.fullName}</strong><br>
+                                วอเลท: <strong style="color:#fff;">${data.user.wallet}</strong>
+                            </span>
+                        </div>
+                    `;
+                    formEl.style.display = 'none';
+                } else {
+                    statusEl.innerHTML = `
+                        <div style="background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:14px;text-align:center;">
+                            <i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i>
+                            <strong style="color:#ffc107;">คุณยังไม่ยืนยันตัวตน</strong><br>
+                            <span style="font-size:0.85em;color:rgba(255,255,255,0.6);">กรุณากรอกข้อมูลด้านล่างเพื่อยืนยัน</span>
+                        </div>
+                    `;
+                    formEl.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Check verify error:', e);
+            }
+        }
+
+        async function submitVerify() {
+            const username = sessionStorage.getItem('username');
+            const fullName = document.getElementById('verifyFullName').value.trim();
+            const wallet = document.getElementById('verifyWallet').value.trim();
+            
+            if (!fullName || !wallet) {
+                showToast('กรุณากรอกข้อมูลให้ครบ', 'error');
+                return;
+            }
+            
+            if (!/^0\d{9}$/.test(wallet)) {
+                showToast('เบอร์วอเลทไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมี 10 หลัก)', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/user/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, fullName, wallet })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    checkVerifyStatus();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) {
+                showToast('ไม่สามารถยืนยันตัวตนได้', 'error');
+            }
+        }
+
         // ===== LOGOUT =====
         function logout() {
             sessionStorage.clear();
@@ -1267,6 +2780,16 @@
 
         // ===== INIT =====
         loadUserData();
+        loadNotifications(); // โหลดการแจ้งเตือนครั้งแรก
+        loadPaymentConfig(); // โหลดข้อมูลการชำระเงิน
+        
+        // Auto-refresh active borrows and user info every 5 seconds
+        setInterval(() => {
+            loadActiveBorrows();
+            loadUserData();
+            loadRecentReturnHistory(); // รีเฟรชประวัติคืนเงินล่าสุด
+            loadNotifications(); // รีเฟรชการแจ้งเตือน
+        }, 5000);
     </script>
 </body>
 </html>
