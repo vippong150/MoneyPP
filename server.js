@@ -9,8 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = 8080;
-const HOST = '0.0.0.0';
+const PORT = process.env.PORT || 8080;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({

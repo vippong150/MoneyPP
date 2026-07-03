@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: moneypp
+    runtime: node
+    repo: https://github.com/vippong150/MoneyPP
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
