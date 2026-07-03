@@ -1,0 +1,65 @@
+{
+  "users": [
+    {
+      "userId": "dev001",
+      "username": "DEVGUNPRO",
+      "password": "200000",
+      "role": "dev",
+      "createdAt": "2026-04-04T23:15:52.522Z"
+    },
+    {
+      "userId": "dev002",
+      "username": "tast2",
+      "password": "1",
+      "role": "dev",
+      "createdAt": "2026-07-02T00:00:00.000Z",
+      "credits": 60,
+      "maxDailyBorrow": 100,
+      "phone": "0000000000",
+      "wallet": "0000000000",
+      "points": 50,
+      "level": 1,
+      "completedBorrows": 0,
+      "lateReturnsCount": 0,
+      "totalPointsDeducted": 0,
+      "activeBorrowTotal": 0
+    },
+    {
+      "userId": "user1775397838972",
+      "username": "1@1.1",
+      "password": "1",
+      "role": "user",
+      "createdAt": "2026-04-05T14:03:58.973Z",
+      "points": 0,
+      "level": 1,
+      "completedBorrows": 0,
+      "maxDailyBorrow": 100,
+      "lateReturnsCount": 0,
+      "totalPointsDeducted": 0,
+      "activeBorrowTotal": 110
+    },
+    {
+      "userId": "user1783016521312",
+      "username": "2@2.2",
+      "password": "1",
+      "phone": "0981515151",
+      "wallet": "0989193999",
+      "role": "user",
+      "createdAt": "2026-07-02T18:22:01.312Z",
+      "points": 51,
+      "level": 1,
+      "maxDailyBorrow": 100,
+      "totalBorrowed": 0,
+      "pendingBorrows": 0,
+      "approvedBorrows": 0,
+      "completedBorrows": 5,
+      "lateReturnsCount": 2,
+      "totalPointsDeducted": 4,
+      "activeBorrowTotal": 0,
+      "fullName": "tast",
+      "verified": true,
+      "verifiedAt": "2026-07-02T19:59:56.243Z",
+      "balance": -0.1
+    }
+  ]
+}

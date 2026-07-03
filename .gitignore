@@ -5,6 +5,5 @@ screenshots/
 *.mp4
 *.rar
 .vscode/
-borrows.json
-users.json
+
 scan/
