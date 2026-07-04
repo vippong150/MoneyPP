@@ -1313,6 +1313,59 @@ app.post('/api/system/update', (req, res) => {
     }
 });
 
+// === Daily Spin ===
+app.post('/api/user/daily-spin', (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.json({ success: false, message: 'กรุณาเข้าสู่ระบบ' });
+
+        const data = readJSON(USERS_FILE);
+        if (!data) return res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+
+        const user = data.users.find(u => u.username === username);
+        if (!user) return res.json({ success: false, message: 'ไม่พบผู้ใช้' });
+
+        const today = new Date().toDateString();
+        if (user.lastSpinDate === today) {
+            return res.json({ success: false, message: 'คุณหมุนวันนี้แล้ว กลับมาหมุนใหม่วันพรุ่งนี้' });
+        }
+
+        const rewards = [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.10];
+        const index = Math.floor(Math.random() * rewards.length);
+        const reward = rewards[index];
+
+        user.balance = (parseFloat(user.balance) || 0) + reward;
+        user.lastSpinDate = today;
+        user.totalSpinRewards = (parseFloat(user.totalSpinRewards) || 0) + reward;
+
+        writeJSON(USERS_FILE, data);
+
+        res.json({ success: true, reward, index, balance: user.balance, message: `🎉 ได้รับ ${reward} บาท` });
+    } catch (error) {
+        res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+    }
+});
+
+app.post('/api/user/spin-status', (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.json({ success: false, message: 'กรุณาเข้าสู่ระบบ' });
+
+        const data = readJSON(USERS_FILE);
+        if (!data) return res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+
+        const user = data.users.find(u => u.username === username);
+        if (!user) return res.json({ success: false, message: 'ไม่พบผู้ใช้' });
+
+        const today = new Date().toDateString();
+        const canSpin = user.lastSpinDate !== today;
+
+        res.json({ success: true, canSpin, lastSpinDate: user.lastSpinDate || null });
+    } catch (error) {
+        res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+    }
+});
+
 // === Main Page ===
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
