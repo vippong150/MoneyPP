@@ -5,7 +5,30 @@
       "username": "DEVGUNPRO",
       "password": "200000",
       "role": "dev",
-      "createdAt": "2026-04-04T23:15:52.522Z"
+      "createdAt": "2026-04-04T23:15:52.522Z",
+      "balance": 0.6,
+      "lastSpinDate": "Sat Jul 04 2026",
+      "totalSpinRewards": 0.6
+    },
+    {
+      "userId": "user_joon01",
+      "username": "joon01",
+      "password": "1",
+      "phone": "0980000000",
+      "wallet": "0980000000",
+      "role": "user",
+      "createdAt": "2026-07-04T00:00:00.000Z",
+      "points": 50,
+      "level": 1,
+      "maxDailyBorrow": 100,
+      "totalBorrowed": 0,
+      "pendingBorrows": 0,
+      "approvedBorrows": 0,
+      "completedBorrows": 0,
+      "lateReturnsCount": 0,
+      "totalPointsDeducted": 0,
+      "activeBorrowTotal": 0,
+      "balance": 0
     },
     {
       "userId": "dev002",
