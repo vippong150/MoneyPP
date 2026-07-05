@@ -55,14 +55,26 @@ const UPDATES_FILE = path.join(__dirname, 'updates.json');
 const NOTIFICATIONS_FILE = path.join(__dirname, 'notifications.json');
 const PAYMENT_CONFIG_FILE = path.join(__dirname, 'payment-config.json');
 
-function initFile(file, defaultData) {
+const SEED_USERS_FILE = path.join(__dirname, 'seed-users.json');
+const SEED_BORROWS_FILE = path.join(__dirname, 'seed-borrows.json');
+
+function initFile(file, defaultData, seedFile) {
     if (!fs.existsSync(file)) {
-        fs.writeFileSync(file, JSON.stringify(defaultData));
+        if (seedFile && fs.existsSync(seedFile)) {
+            const seedData = fs.readFileSync(seedFile, 'utf-8');
+            fs.writeFileSync(file, seedData);
+            console.log(`✓ Seeded ${path.basename(file)} from ${path.basename(seedFile)}`);
+        } else {
+            fs.writeFileSync(file, JSON.stringify(defaultData));
+            console.log(`✓ Created empty ${path.basename(file)}`);
+        }
+    } else {
+        console.log(`✓ ${path.basename(file)} exists (kept existing data)`);
     }
 }
 
-initFile(USERS_FILE, { users: [] });
-initFile(BORROWS_FILE, { borrows: [] });
+initFile(USERS_FILE, { users: [] }, SEED_USERS_FILE);
+initFile(BORROWS_FILE, { borrows: [] }, SEED_BORROWS_FILE);
 initFile(NOTIFICATIONS_FILE, { notifications: [] });
 initFile(PAYMENT_CONFIG_FILE, {
     truemoney: {

@@ -6,5 +6,6 @@ screenshots/
 !VIEDD/*.mp4
 *.rar
 .vscode/
-
 scan/
+users.json
+borrows.json
