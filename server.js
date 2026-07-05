@@ -1325,6 +1325,19 @@ app.post('/api/system/update', (req, res) => {
     }
 });
 
+// === Spin Config ===
+const SPIN_CONFIG_FILE = path.join(__dirname, 'spin-config.json');
+initFile(SPIN_CONFIG_FILE, {
+    rewards: [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.10]
+});
+
+function getSpinRewards() {
+    try {
+        const data = readJSON(SPIN_CONFIG_FILE);
+        return (data && data.rewards && data.rewards.length > 0) ? data.rewards : [0.10];
+    } catch { return [0.10]; }
+}
+
 // === Daily Spin ===
 app.post('/api/user/daily-spin', (req, res) => {
     try {
@@ -1337,17 +1350,21 @@ app.post('/api/user/daily-spin', (req, res) => {
         const user = data.users.find(u => u.username === username);
         if (!user) return res.json({ success: false, message: 'ไม่พบผู้ใช้' });
 
-        const today = new Date().toDateString();
-        if (user.lastSpinDate === today) {
-            return res.json({ success: false, message: 'คุณหมุนวันนี้แล้ว กลับมาหมุนใหม่วันพรุ่งนี้' });
+        const now = Date.now();
+        if (user.lastSpinTime && (now - user.lastSpinTime) < 86400000) {
+            const remaining = 86400000 - (now - user.lastSpinTime);
+            const hrs = Math.floor(remaining / 3600000);
+            const mins = Math.floor((remaining % 3600000) / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            return res.json({ success: false, message: `รออีก ${hrs}ชม ${mins}นาที ${secs}วิ` });
         }
 
-        const rewards = [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.10];
+        const rewards = getSpinRewards();
         const index = Math.floor(Math.random() * rewards.length);
         const reward = rewards[index];
 
         user.balance = (parseFloat(user.balance) || 0) + reward;
-        user.lastSpinDate = today;
+        user.lastSpinTime = now;
         user.totalSpinRewards = (parseFloat(user.totalSpinRewards) || 0) + reward;
 
         writeJSON(USERS_FILE, data);
@@ -1369,10 +1386,42 @@ app.post('/api/user/spin-status', (req, res) => {
         const user = data.users.find(u => u.username === username);
         if (!user) return res.json({ success: false, message: 'ไม่พบผู้ใช้' });
 
-        const today = new Date().toDateString();
-        const canSpin = user.lastSpinDate !== today;
+        const now = Date.now();
+        let canSpin = true;
+        let remainingMs = 0;
 
-        res.json({ success: true, canSpin, lastSpinDate: user.lastSpinDate || null });
+        if (user.lastSpinTime && (now - user.lastSpinTime) < 86400000) {
+            canSpin = false;
+            remainingMs = 86400000 - (now - user.lastSpinTime);
+        }
+
+        res.json({ success: true, canSpin, remainingMs, lastSpinTime: user.lastSpinTime || null });
+    } catch (error) {
+        res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+    }
+});
+
+app.post('/api/admin/spin-config', (req, res) => {
+    try {
+        const { adminUsername, rewards } = req.body;
+        if (!adminUsername) return res.json({ success: false, message: 'กรุณาเข้าสู่ระบบ' });
+
+        const userData = readJSON(USERS_FILE);
+        const admin = userData?.users.find(u => u.username === adminUsername);
+        if (!admin || (admin.role !== 'admin' && admin.role !== 'dev')) {
+            return res.json({ success: false, message: 'คุณไม่มีสิทธิ์เข้าถึง (เฉพาะ DEV)' });
+        }
+
+        if (rewards) {
+            if (!Array.isArray(rewards) || rewards.length < 2) {
+                return res.json({ success: false, message: 'ต้องมีอย่างน้อย 2 รางวัล' });
+            }
+            writeJSON(SPIN_CONFIG_FILE, { rewards });
+            return res.json({ success: true, message: 'บันทึกการตั้งค่าแล้ว!' });
+        }
+
+        const config = readJSON(SPIN_CONFIG_FILE);
+        res.json({ success: true, config });
     } catch (error) {
         res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
     }

@@ -250,6 +250,9 @@
             <div class="tab" onclick="switchTab('payment')">
                 <i class="fas fa-money-check-alt"></i> ตั้งค่าการชำระเงิน
             </div>
+            <div class="tab" onclick="switchTab('spin')">
+                <i class="fas fa-sync-alt"></i> หมุนรายวัน
+            </div>
         </div>
 
         <!-- Section: Pending Requests -->
@@ -456,6 +459,28 @@
                 <div id="paymentMessage" style="margin-top:20px;padding:12px;border-radius:8px;display:none;"></div>
             </div>
         </div>
+
+        <!-- Section: Spin Config -->
+        <div class="section" id="section-spin">
+            <div class="card">
+                <h2 style="margin-bottom:20px;"><i class="fas fa-sync-alt" style="color:#ff6b35;"></i> ตั้งค่าหมุนรายวัน</h2>
+                <p style="color:rgba(255,255,255,0.5);margin-bottom:20px;">กำหนดรางวัลวงล้อหมุนรายวัน (ขั้นต่ำ 2 รางวัล)</p>
+                
+                <div id="spinRewardList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;"></div>
+                
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+                    <input type="number" id="newReward" step="0.01" min="0" placeholder="เพิ่มรางวัล (บาท)" style="flex:1;min-width:120px;padding:10px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:0.9em;">
+                    <button onclick="addSpinReward()" style="padding:10px 20px;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);border-radius:8px;color:#ff6b35;font-weight:600;cursor:pointer;">
+                        <i class="fas fa-plus"></i> เพิ่ม
+                    </button>
+                </div>
+                
+                <button onclick="saveSpinConfig()" style="width:100%;padding:12px;background:linear-gradient(135deg,#ff6b35,#ff3c00);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;transition:all 0.3s;">
+                    <i class="fas fa-save"></i> บันทึกการตั้งค่า
+                </button>
+                <div id="spinMessage" style="margin-top:16px;padding:12px;border-radius:8px;display:none;"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -501,6 +526,10 @@
                 tabs[6].classList.add('active');
                 document.getElementById('section-payment').classList.add('active');
                 loadPaymentConfig();
+            } else if (tab === 'spin') {
+                tabs[7].classList.add('active');
+                document.getElementById('section-spin').classList.add('active');
+                loadSpinConfig();
             }
         }
         
@@ -1274,6 +1303,74 @@
             setTimeout(function() {
                 msgEl.style.display = 'none';
             }, 5000);
+        }
+
+        // ===== SPIN CONFIG =====
+        let spinRewards = [];
+
+        async function loadSpinConfig() {
+            try {
+                const res = await fetch('/api/admin/spin-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername })
+                });
+                const data = await res.json();
+                if (data.success && data.config) {
+                    spinRewards = data.config.rewards || [];
+                    renderSpinRewards();
+                }
+            } catch (e) {
+                showMsg('spinMessage', 'โหลดข้อมูลไม่สำเร็จ', 'error');
+            }
+        }
+
+        function renderSpinRewards() {
+            const list = document.getElementById('spinRewardList');
+            list.innerHTML = '';
+            spinRewards.forEach((val, i) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.15);border-radius:10px;';
+                div.innerHTML = `
+                    <span style="width:24px;height:24px;border-radius:50%;background:rgba(255,107,53,0.2);display:flex;align-items:center;justify-content:center;font-size:0.75em;font-weight:700;color:#ff6b35;flex-shrink:0;">${i+1}</span>
+                    <span style="flex:1;font-weight:600;font-size:1.1em;">${val} บาท</span>
+                    <button onclick="removeSpinReward(${i})" style="background:none;border:none;color:#ff4757;cursor:pointer;font-size:1.1em;padding:4px;"><i class="fas fa-times"></i></button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function addSpinReward() {
+            const input = document.getElementById('newReward');
+            const val = parseFloat(input.value);
+            if (isNaN(val) || val <= 0) { showMsg('spinMessage', 'กรุณากรอกจำนวนเงินที่ถูกต้อง', 'error'); return; }
+            spinRewards.push(val);
+            input.value = '';
+            renderSpinRewards();
+            showMsg('spinMessage', `เพิ่มรางวัล ${val} บาท`, 'success');
+        }
+
+        function removeSpinReward(index) {
+            spinRewards.splice(index, 1);
+            renderSpinRewards();
+        }
+
+        async function saveSpinConfig() {
+            if (spinRewards.length < 2) {
+                showMsg('spinMessage', 'ต้องมีอย่างน้อย 2 รางวัล', 'error');
+                return;
+            }
+            try {
+                const res = await fetch('/api/admin/spin-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername, rewards: spinRewards })
+                });
+                const data = await res.json();
+                showMsg('spinMessage', data.message, data.success ? 'success' : 'error');
+            } catch (e) {
+                showMsg('spinMessage', 'เกิดข้อผิดพลาด', 'error');
+            }
         }
     </script>
 </body>

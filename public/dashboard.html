@@ -570,19 +570,29 @@
         }
 
         /* Daily Spin */
-        .spin-container { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0; }
-        .spin-status { font-size: 1.1em; color: rgba(255,255,255,0.7); text-align: center; padding: 12px 24px; border-radius: 12px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); }
+        .spin-confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+        .spin-container { padding: 20px 0; }
+        .spin-hero { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
         .spin-wheel-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
-        #spinCanvas { width: 320px; height: 320px; border-radius: 50%; box-shadow: 0 0 40px rgba(255,107,53,0.3), 0 0 80px rgba(255,107,53,0.1); transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
+        .spin-glow { position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,53,0.15), transparent 70%); animation: spinPulse 2s ease-in-out infinite; pointer-events: none; }
+        @keyframes spinPulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.08); opacity: 1; } }
+        #spinCanvas { width: 320px; height: 320px; border-radius: 50%; box-shadow: 0 0 40px rgba(255,107,53,0.3), 0 0 80px rgba(255,107,53,0.1); position: relative; z-index: 1; }
         .spin-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 28px; color: #ff6b35; z-index: 10; filter: drop-shadow(0 2px 6px rgba(255,107,53,0.6)); }
-        .spin-btn { position: absolute; width: 80px; height: 80px; border-radius: 50%; border: none; background: linear-gradient(135deg, #ff6b35, #ff3c00); color: #fff; font-size: 0.85em; font-weight: 700; cursor: pointer; z-index: 5; box-shadow: 0 4px 20px rgba(255,107,53,0.4); transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .spin-btn { position: absolute; z-index: 5; width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); background: linear-gradient(135deg, #ff6b35, #ff3c00); color: #fff; font-size: 0.85em; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,53,0.4), inset 0 1px 0 rgba(255,255,255,0.2); transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
         .spin-btn:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(255,107,53,0.5); }
         .spin-btn:disabled { cursor: not-allowed; opacity: 0.6; transform: none; }
         .spin-btn i { font-size: 1.2em; }
-        .spin-result { text-align: center; padding: 16px 32px; border-radius: 16px; font-size: 1.3em; font-weight: 700; display: none; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); }
-        .spin-result.show { display: block; animation: spinReveal 0.5s ease; }
-        .spin-countdown { font-size: 0.85em; color: rgba(255,255,255,0.4); text-align: center; }
-        @keyframes spinReveal { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        .spin-info { display: flex; flex-direction: column; gap: 16px; min-width: 240px; }
+        .spin-status { font-size: 1em; color: #fff; text-align: center; padding: 14px 20px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(255,60,0,0.08)); border: 1px solid rgba(255,107,53,0.25); backdrop-filter: blur(10px); }
+        .spin-result { text-align: center; padding: 16px 24px; border-radius: 16px; font-size: 1.4em; font-weight: 800; display: none; background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,53,0.1)); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; }
+        .spin-result.show { display: block; animation: spinBounce 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        @keyframes spinBounce { 0% { opacity: 0; transform: scale(0.5) rotate(-5deg); } 60% { transform: scale(1.1) rotate(2deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+        .spin-countdown { text-align: center; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+        .cd-label { font-size: 0.75em; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .cd-time { font-size: 1.6em; font-weight: 700; color: #ff6b35; font-variant-numeric: tabular-nums; }
+        .spin-history { text-align: center; padding: 14px; border-radius: 14px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.1); }
+        .sh-label { font-size: 0.75em; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; }
+        .sh-value { font-size: 1.3em; font-weight: 700; color: var(--primary); margin-top: 2px; }
 
         /* Modal */
         .modal-overlay {
@@ -940,23 +950,36 @@
 
         <!-- Section: Daily Spin -->
         <div class="section" id="section-spin">
+            <canvas id="spinConfetti" class="spin-confetti"></canvas>
             <div class="section-header">
                 <h2><i class="fas fa-sync-alt" style="color:#ff6b35;"></i> หมุนรายวัน</h2>
                 <p>หมุนวงล้อรับเครดิตฟรีทุกวัน!</p>
             </div>
             <div class="spin-container">
-                <div class="spin-status" id="spinStatus">
-                    <i class="fas fa-gift"></i> กดหมุนเพื่อลุ้นรางวัล!
+                <div class="spin-hero">
+                    <div class="spin-wheel-wrap">
+                        <canvas id="spinCanvas" width="400" height="400"></canvas>
+                        <div class="spin-pointer">▼</div>
+                        <button class="spin-btn" id="spinBtn" onclick="doSpin()">
+                            <i class="fas fa-sync-alt"></i> หมุน!
+                        </button>
+                        <div class="spin-glow"></div>
+                    </div>
+                    <div class="spin-info">
+                        <div class="spin-status" id="spinStatus">
+                            <i class="fas fa-gift"></i> กดหมุนเพื่อลุ้นรางวัล!
+                        </div>
+                        <div id="spinResult" class="spin-result"></div>
+                        <div id="spinCountdown" class="spin-countdown">
+                            <div class="cd-label">เวลาที่เหลือ</div>
+                            <div class="cd-time" id="cdTime">--:--:--</div>
+                        </div>
+                        <div class="spin-history" id="spinHistory">
+                            <div class="sh-label">ที่หมุนทั้งหมด</div>
+                            <div class="sh-value" id="spinTotal">0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="spin-wheel-wrap">
-                    <canvas id="spinCanvas" width="400" height="400"></canvas>
-                    <div class="spin-pointer">▼</div>
-                    <button class="spin-btn" id="spinBtn" onclick="doSpin()">
-                        <i class="fas fa-sync-alt"></i> หมุน!
-                    </button>
-                </div>
-                <div id="spinResult" class="spin-result"></div>
-                <div id="spinCountdown" class="spin-countdown"></div>
             </div>
         </div>
 
@@ -2816,13 +2839,28 @@
 
         // ===== DAILY SPIN =====
         let spinning = false;
+        let countdownInterval = null;
 
         function initSpin() {
-            drawSpinWheel(0);
-            checkSpinStatus();
+            fetchSpinRewards().then(rewards => {
+                drawSpinWheel(0, rewards);
+                checkSpinStatus();
+            });
         }
 
-        function drawSpinWheel(rotation) {
+        async function fetchSpinRewards() {
+            try {
+                const res = await fetch('/api/admin/spin-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminUsername: sessionStorage.getItem('username') })
+                });
+                const data = await res.json();
+                return data.success && data.config ? data.config.rewards : [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.10];
+            } catch { return [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.10]; }
+        }
+
+        function drawSpinWheel(rotation, rewards) {
             const canvas = document.getElementById('spinCanvas');
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
@@ -2833,8 +2871,8 @@
             ctx.translate(cx, cy);
             ctx.rotate(rotation * Math.PI / 180);
 
-            const rewards = ['0.10', '0.20', '0.30', '0.40', '0.50', '0.60', '0.70', '0.10'];
-            const colors = ['#ff6b35', '#ff3c00', '#ff8c42', '#ff6b35', '#ff3c00', '#ff8c42', '#ff6b35', '#ff3c00'];
+            const palette = ['#ff6b35', '#ff3c00', '#ff8c42', '#e85d2a', '#ff6b35', '#ff3c00', '#ff8c42', '#e85d2a',
+                             '#ff7b4a', '#ff4d15', '#ff9a5c', '#d64f20', '#ff6b35', '#ff3c00', '#ff8c42', '#e85d2a'];
             const slice = 360 / rewards.length;
 
             for (let i = 0; i < rewards.length; i++) {
@@ -2845,7 +2883,7 @@
                 ctx.moveTo(0, 0);
                 ctx.arc(0, 0, r, startAngle, endAngle);
                 ctx.closePath();
-                ctx.fillStyle = colors[i];
+                ctx.fillStyle = palette[i % palette.length];
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(255,255,255,0.2)';
                 ctx.lineWidth = 2;
@@ -2855,20 +2893,45 @@
                 ctx.rotate((i * slice + slice/2 - 90) * Math.PI / 180);
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold 18px sans-serif';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 4;
                 ctx.fillText(rewards[i], r * 0.6, 6);
                 ctx.restore();
             }
 
             ctx.beginPath();
-            ctx.arc(0, 0, 18, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fff';
+            ctx.arc(0, 0, 20, 0, 2 * Math.PI);
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 20);
+            grad.addColorStop(0, '#fff');
+            grad.addColorStop(1, '#ff6b35');
+            ctx.fillStyle = grad;
             ctx.fill();
-            ctx.strokeStyle = '#ff6b35';
+            ctx.strokeStyle = '#fff';
             ctx.lineWidth = 3;
             ctx.stroke();
 
             ctx.restore();
+        }
+
+        function startCountdown(remainingMs) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            function update() {
+                const el = document.getElementById('cdTime');
+                if (!el) return;
+                remainingMs = Math.max(0, remainingMs - 1000);
+                const hrs = Math.floor(remainingMs / 3600000);
+                const mins = Math.floor((remainingMs % 3600000) / 60000);
+                const secs = Math.floor((remainingMs % 60000) / 1000);
+                el.textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                if (remainingMs <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    el.textContent = '--:--:--';
+                }
+            }
+            update();
+            countdownInterval = setInterval(update, 1000);
         }
 
         async function checkSpinStatus() {
@@ -2883,22 +2946,82 @@
                 });
                 const data = await res.json();
 
+                const btn = document.getElementById('spinBtn');
+                const status = document.getElementById('spinStatus');
+                const totalEl = document.getElementById('spinTotal');
+
                 if (data.success) {
                     if (data.canSpin) {
-                        document.getElementById('spinBtn').disabled = false;
-                        document.getElementById('spinBtn').innerHTML = '<i class="fas fa-sync-alt"></i> หมุน!';
-                        document.getElementById('spinStatus').innerHTML = '<i class="fas fa-gift"></i> กดหมุนเพื่อลุ้นรางวัล!';
-                        document.getElementById('spinCountdown').textContent = '';
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-sync-alt"></i> หมุน!';
+                        status.innerHTML = '<i class="fas fa-gift"></i> กดหมุนเพื่อลุ้นรางวัล!';
+                        document.getElementById('cdTime').textContent = 'พร้อมหมุน!';
+                        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
                     } else {
-                        document.getElementById('spinBtn').disabled = true;
-                        document.getElementById('spinBtn').innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
-                        document.getElementById('spinStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i> คุณหมุนวันนี้แล้ว';
-                        document.getElementById('spinCountdown').textContent = 'กลับมาหมุนใหม่วันพรุ่งนี้';
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
+                        status.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i> หมุนวันนี้แล้ว';
+                        startCountdown(data.remainingMs);
                     }
                 }
             } catch (e) {
                 console.error('Spin status error:', e);
             }
+        }
+
+        // Confetti
+        function fireConfetti() {
+            const canvas = document.getElementById('spinConfetti');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#ff6b35','#ffd700','#ff3c00','#ff8c42','#2ecc71','#00d4ff','#a855f7','#ff6b9d'];
+
+            for (let i = 0; i < 120; i++) {
+                particles.push({
+                    x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: -Math.random() * 14 - 4,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 10,
+                    gravity: 0.25 + Math.random() * 0.15,
+                    opacity: 1
+                });
+            }
+
+            let frame = 0;
+            const maxFrames = 120;
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                frame++;
+                let alive = false;
+                for (const p of particles) {
+                    if (p.opacity <= 0) continue;
+                    alive = true;
+                    p.x += p.vx;
+                    p.vy += p.gravity;
+                    p.y += p.vy;
+                    p.rotation += p.rotSpeed;
+                    p.opacity = Math.max(0, 1 - frame / maxFrames);
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+                    ctx.restore();
+                }
+                if (alive) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
         }
 
         async function doSpin() {
@@ -2912,8 +3035,9 @@
                 return;
             }
 
-            document.getElementById('spinBtn').disabled = true;
-            document.getElementById('spinBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังหมุน...';
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังหมุน...';
             document.getElementById('spinResult').classList.remove('show');
             document.getElementById('spinResult').style.display = 'none';
 
@@ -2926,18 +3050,21 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    const spinRevolutions = 5;
-                    const sliceAngle = 360 / 8;
-                    const stopAngle = data.index * sliceAngle + sliceAngle / 2;
-                    const totalRotation = spinRevolutions * 360 + (360 - stopAngle);
+                    const rewards = await fetchSpinRewards();
+                    const numSegments = rewards.length;
+                    const sliceAngle = 360 / numSegments;
 
-                    drawSpinWheel(0);
+                    drawSpinWheel(0, rewards);
                     const canvas = document.getElementById('spinCanvas');
                     canvas.style.transition = 'none';
                     canvas.style.transform = 'rotate(0deg)';
 
+                    const spinRevolutions = 5 + Math.floor(Math.random() * 2);
+                    const stopAngle = data.index * sliceAngle + sliceAngle / 2;
+                    const totalRotation = spinRevolutions * 360 + (360 - stopAngle);
+
                     setTimeout(() => {
-                        canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                        canvas.style.transition = 'transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
                         canvas.style.transform = `rotate(${totalRotation}deg)`;
                     }, 50);
 
@@ -2946,21 +3073,23 @@
                         document.getElementById('spinResult').style.display = 'block';
                         document.getElementById('spinResult').classList.add('show');
                         document.getElementById('spinStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i> หมุนวันนี้เรียบร้อย';
-                        document.getElementById('spinCountdown').textContent = 'กลับมาหมุนใหม่วันพรุ่งนี้';
-                        document.getElementById('spinBtn').disabled = true;
-                        document.getElementById('spinBtn').innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
-                        
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
+
+                        fireConfetti();
                         loadUserData();
-                    }, 4200);
+
+                        checkSpinStatus();
+                    }, 4700);
                 } else {
                     showToast(data.message, 'error');
-                    document.getElementById('spinBtn').disabled = true;
-                    document.getElementById('spinBtn').innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-check"></i> หมุนแล้ว';
                 }
             } catch (e) {
                 showToast('เกิดข้อผิดพลาด', 'error');
-                document.getElementById('spinBtn').disabled = false;
-                document.getElementById('spinBtn').innerHTML = '<i class="fas fa-sync-alt"></i> หมุน!';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> หมุน!';
             }
 
             spinning = false;
