@@ -1,0 +1,13 @@
+{
+  "truemoney": {
+    "accountNumber": "0000000000",
+    "accountName": "TRUEMONEY",
+    "qrCodeUrl": null
+  },
+  "bank": {
+    "accountNumber": "0000000000",
+    "accountName": "",
+    "bankName": "ธนาคารกรุงเทพ",
+    "qrCodeUrl": null
+  }
+}

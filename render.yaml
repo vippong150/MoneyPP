@@ -7,6 +7,3 @@ services:
     region: singapore
     buildCommand: npm install
     startCommand: npm start
-    envVars:
-      - key: MONGODB_URI
-        sync: false
